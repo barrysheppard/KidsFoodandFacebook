@@ -3,8 +3,10 @@
 rm(list=ls())
 
 # Set working director
-setwd("~/GitHub/Masters")
+setwd("~/GitHub/KidsFoodandFacebook")
 
 source("load.R", print.eval=TRUE)
 source("descriptives.R", print.eval=TRUE)
 source("prompted_recall.R", print.eval=TRUE)
+
+data[73,]

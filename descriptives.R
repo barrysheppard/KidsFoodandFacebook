@@ -35,26 +35,30 @@ summary(data$good.things)
 
 # Which of these things do you know how to do?  (you can tick more than one)
 
-# Block unwanted adverts or junk mail spam
-table(data$blocking_1)
-# Delete the record of which sites they have visited
-table(data$blocking_2)
-# Change privacy settings on social networking profile
-table(data$blocking_3)
-# Block messages from someone they don’t want to hear from
-table(data$blocking_4)
-# Find information on how to use the internet safely
-table(data$blocking_5)
-# Publish a comment on a blog, website or forum
-table(data$posting_1)
-# Upload images, videos or music onto social media
-table(data$posting_2)
-# Create a blog
-table(data$posting_3)
-# Update status on social networking site used most
-table(data$updating_1)
-# Take a picture or a short video with smartphone and upload it on to social media
-table(data$updating_2)
+# Graphing the 'Which of these things do you know how do to?' data
+
+# Create the data frame
+task <- factor(x = c(1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10), levels = c(1,2,3,4,5,6,7,8,9,10), labels = c("Block unwanted adverts or junk mail spam", "Delete the record of which sites they have visited", "Change privacy settings on social networking profile", "Block messages from someone they don’t want to\n hear from", "Find information on how to use the internet safely", "Publish a comment on a blog, website or forum", "Upload images, videos or music onto social meda", "Create a blog", "Update status on social networking site used most", "Take a picture or a short video with smartphone\n and upload it on to social media"))
+result <- factor(x = c(1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0), levels = c(1,0), labels = c("Yes", "No"))
+total <- c(sum(data$blocking_1 == 1, na.rm=NA), sum(data$blocking_2 == 1, na.rm=NA), sum(data$blocking_3 == 1, na.rm=NA), sum(data$blocking_4 == 1, na.rm=NA), sum(data$blocking_5 == 1, na.rm=NA), sum(data$posting_1 == 1, na.rm=NA), sum(data$posting_2 == 1, na.rm=NA), sum(data$posting_3 == 1, na.rm=NA), sum(data$updating_1 == 1, na.rm=NA), sum(data$updating_2 == 1, na.rm=NA))
+total <- c(total, sum(is.na(data$blocking_1)), sum(is.na(data$blocking_2)), sum(is.na(data$blocking_3)), sum(is.na(data$blocking_4)), sum(is.na(data$blocking_5)), sum(is.na(data$posting_1)), sum(is.na(data$posting_2)), sum(is.na(data$posting_3)), sum(is.na(data$updating_1)), sum(is.na(data$updating_2)) )
+percentage <- round(total/nrow(data)*100)
+pos = (percentage - 0.5 * percentage)
+chart_df <- data.frame(task, result, total, percentage, pos)
+
+ggplot(chart_df, aes(x = task, y = percentage, fill = result)) + 
+  geom_bar(stat="identity", width= .9) +
+  xlab("\nTask") +
+  ylab("%\n") +
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(aes(label = ifelse(result == "Yes", paste0(percentage,"%"), ""), y = pos), position = "stack", color='white') +
+  coord_flip() + 
+  theme(legend.position = "bottom") +
+  theme(text = element_text(size=9)) +
+  theme(legend.title = element_blank()) +
+  ggtitle("Which of these things do you know how to do?") +
+  theme(plot.title = element_text(hjust = -6.4)) 
 
 # What do you like most about Facebook?
 data$most.liked

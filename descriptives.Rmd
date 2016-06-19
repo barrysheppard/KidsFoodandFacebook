@@ -1,7 +1,7 @@
 ---
-title: "Descriptives"
+title: "Adolescents, Facebook, and Food"
 author: "Barry Sheppard"
-date: "16 June 2016"
+date: "18 June 2016"
 output: html_document
 ---
 
@@ -11,6 +11,10 @@ output: html_document
 
 library("psych")
 library("tidyr")
+library(ggplot2)
+library(ggthemes)
+library(plyr)
+library(scales)
 
 # Load the data from csv file, this comes from the Qualtrics survey, headers are loaded separately as the second row is extra header info not needed 
 header <- read.csv("Facebook.csv", nrows=1, header=FALSE, stringsAsFactors=FALSE)
@@ -36,7 +40,6 @@ names(data)[1]="id"
 eye_data <- eye_data[, !(names(eye_data) %in% delete)] 
 names(eye_data)[1]="id"
 
-
 # Remove variables no longer needed
 rm(delete)
 rm(header)
@@ -47,7 +50,6 @@ rm(eye_data)
 data$tv.use[1:9] <- NA
 # One entry was recorded as 24, which would suggested they were watching 24 hours of tv a day, assuming this is an error it is being removed
 data$tv.use[data$tv.use==24] <- NA
-
 
 # Code some the relevant totals
 
@@ -98,7 +100,6 @@ p34 <- as.integer(data$familiarity_35 + data$familiarity_40)
 p35 <- as.integer(data$familiarity_36)
 p36 <- as.integer(data$familiarity_4)
 
-
 # Create data frames groups into celebrity, peer, and sponsored
 rating<- data.frame(data$id, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36)
 
@@ -110,7 +111,6 @@ rating_long <- gather(rating, profile, rating, p01:p36)
 
 # Any 2s should be changed to 1, this is where the user incorrectly ticked the product of the opposite gender in addition to their own
 rating_long[rating_long == 2] <- 1
-
 
 # Create data frames for each of the nine conditions
 
@@ -215,8 +215,6 @@ rm(list = delete)
 rm(delete)
 rm(rating_long)
 
-library(ggplot2)
-
 # Descriptives
 
 #
@@ -224,255 +222,271 @@ library(ggplot2)
 #
 ```
 
-Total participants
+#Total participants
 ```{r, echo=FALSE}
 nrow(data)
 ```
 
-Ages
+
 ```{r, echo=FALSE}
 # 1 = 13, 2 = 14
 data$age <- factor(data$age, levels = c(1,2,3), labels = c("13","14", "other"))
-summary(data$age)
 ggplot(data=data, aes(x=age, fill=age)) +
-    geom_bar(colour = "black", stat="count") +
-    guides(fill=FALSE)
-
+  geom_bar(colour = "black", stat="count") +
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(stat='count', aes(label=..count..), vjust=2, colour = "white") +
+  ggtitle("Age") +
+  guides(fill=FALSE)
 ```
 
 
-Gender
+
 ```{r, echo=FALSE}
 # 1 = Male, 2 = Female
 data$gender <- factor(data$gender, levels = c(1,2), labels = c("Male","Female"))
-summary(data$gender)
 ggplot(data=data, aes(x=gender, fill=gender)) +
-    geom_bar(colour = "black", stat="count") +
-    guides(fill=FALSE)
+  geom_bar(colour = "black", stat="count") +
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(stat='count', aes(label=..count..), vjust=2, colour = "white") +
+  ggtitle("Gender") +
+  guides(fill=FALSE)
 
 ```
 
 
-Please tell me how often you go online or use the internet, from a computer, a mobile phone, a smartphone, or any other device you may use to go online (please tick one):
 ```{r, echo=FALSE}
 # Please tell me how often you go online or use the internet, from a computer, a mobile phone, a smartphone, or any other device you may use to go online (please tick one):
 data$how.often <- factor(data$how.often, levels = c(1,2,3,4), labels = c("Several times a day", "Daily or almost daily","At least weekly", "Never or almost never"))
-summary(data$how.often)
 ggplot(data=data, aes(x=how.often, fill=how.often)) +
-    geom_bar(colour = "black", stat="count") +
-    guides(fill=FALSE)
-
+  geom_bar(colour = "black", stat="count") +
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(stat='count', aes(label=..count..), vjust=2, colour = "white") +
+  ggtitle("Please tell me how often you go online or use the internet,\n from a computer, a mobile phone, a smartphone, or any other\n device you may use to go online (please tick one):") +
+  guides(fill=FALSE)
 ```
 
 
-How many hours of television do you watch every day?
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 # How many hours of television do you watch every day?
 
-describe(data$tv.use)
-
 ggplot(data, aes(x=tv.use)) +
-    geom_histogram(binwidth=.5, colour="black", fill="white") +
-    geom_vline(aes(xintercept=mean(tv.use, na.rm=T)),   # Ignore NA values for mean
-               color="red", linetype="dashed", size=1)
+  geom_histogram(colour = "black", binwidth=.5) +
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(stat='count', aes(label=..count..), vjust=2, colour = "white") +
+  ggtitle("How many hours of television do you watch every day?") +
+  geom_vline(aes(xintercept=mean(tv.use, na.rm=T)), color="red", linetype="dashed", size=1)
+describe(data$tv.use)
 ```
 
 
-Roughly how many people are you in contact with on social media (Please tick one):
 ```{r, echo=FALSE}
 # Roughly how many people are you in contact with on social media (Please tick one):
 data$contacts <- factor(data$contacts, levels = c(1,2,3,4,5), labels = c("Up to 10",	"11-50",	"51-100",	"101-300",	"More than 300"))
-summary(data$contacts)
 ggplot(data=data, aes(x=contacts, fill=contacts)) +
-    geom_bar(colour = "black", stat="count") +
-    guides(fill=FALSE)
-
+  geom_bar(colour = "black", stat="count") +
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(stat='count', aes(label=..count..), vjust=2, colour = "white") +
+  ggtitle("Roughly how many people are you in contact with on\n social media (Please tick one):") +
+  guides(fill=FALSE)
 ```
 
 
-is your profile set to (Please tick one):
 ```{r, echo=FALSE}
 # is your profile set to (Please tick one):
-data$profile.privacy <- factor(data$profile.privacy, levels = c(1,2,3,4), labels = c("Public, so that everyone can see", "Partially private, so that friends of friends on your network can see", "Private, so that only your friends can see", "Dont know"))
-summary(data$profile.privacy)
-
+data$profile.privacy <- factor(data$profile.privacy, levels = c(1,2,3,4), labels = c("Public, so that everyone\n can see", "Partially private, so that\n friends of friends on your\n network can see", "Private, so that only\n your friends can see", "don't know"))
 ggplot(data=data, aes(x=profile.privacy, fill=profile.privacy)) +
-    geom_bar(colour = "black", stat="count") +
-    guides(fill=FALSE) +
-    coord_flip() 
-
+  geom_bar(colour = "black", stat="count") +
+  guides(fill=FALSE) +
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(stat='count', aes(label=..count..), hjust=2, colour = "white") +
+  ggtitle("is your profile set to (Please tick one):") +
+  theme(plot.title = element_text(hjust = -1)) +
+  coord_flip() 
 ```
 
 
-There are lots of things on the internet that are good for children of my age (Please tick one):
 ```{r, echo=FALSE}
 # There are lots of things on the internet that are good for children of my age (Please tick one):
 data$good.things <- factor(data$good.things, levels = c(1,2,3), labels = c("Not True", "A bit True", "Very True"))
-summary(data$good.things)
-
 ggplot(data=data, aes(x=good.things, fill=good.things)) +
-    geom_bar(colour = "black", stat="count") +
-    guides(fill=FALSE)
-
+  geom_bar(colour = "black", stat="count") +
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(stat='count', aes(label=..count..), vjust=2, colour = "white") +
+  ggtitle("There are lots of things on the internet that are good for\n children of my age") +
+  guides(fill=FALSE)
 ```
 
 
-Which of these things do you know how to do?  (you can tick more than one)
+```{r, echo=FALSE}
+# Graphing the 'Which of these things do you know how do to?' data
 
-Block unwanted adverts or junk mail spam
-```{r, echo=FALSE}
-# Block unwanted adverts or junk mail spam
-table(data$blocking_1)
+# Create the data frame
+task <- factor(x = c(1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10), levels = c(1,2,3,4,5,6,7,8,9,10), labels = c("Block unwanted adverts or junk mail spam", "Delete the record of which sites they have visited", "Change privacy settings on social networking profile", "Block messages from someone they don't want to\n hear from", "Find information on how to use the internet safely", "Publish a comment on a blog, website or forum", "Upload images, videos or music onto social meda", "Create a blog", "Update status on social networking site used most", "Take a picture or a short video with smartphone\n and upload it on to social media"))
+result <- factor(x = c(1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0), levels = c(1,0), labels = c("Yes", "No"))
+total <- c(sum(data$blocking_1 == 1, na.rm=NA), sum(data$blocking_2 == 1, na.rm=NA), sum(data$blocking_3 == 1, na.rm=NA), sum(data$blocking_4 == 1, na.rm=NA), sum(data$blocking_5 == 1, na.rm=NA), sum(data$posting_1 == 1, na.rm=NA), sum(data$posting_2 == 1, na.rm=NA), sum(data$posting_3 == 1, na.rm=NA), sum(data$updating_1 == 1, na.rm=NA), sum(data$updating_2 == 1, na.rm=NA))
+total <- c(total, sum(is.na(data$blocking_1)), sum(is.na(data$blocking_2)), sum(is.na(data$blocking_3)), sum(is.na(data$blocking_4)), sum(is.na(data$blocking_5)), sum(is.na(data$posting_1)), sum(is.na(data$posting_2)), sum(is.na(data$posting_3)), sum(is.na(data$updating_1)), sum(is.na(data$updating_2)) )
+percentage <- round(total/nrow(data)*100)
+pos = (percentage - 0.5 * percentage)
+chart_df <- data.frame(task, result, total, percentage, pos)
 
+ggplot(chart_df, aes(x = task, y = percentage, fill = result)) + 
+  geom_bar(colour = "black", stat="identity", width= .9) +
+  xlab("\nTask") +
+  ylab("%\n") +
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(aes(label = ifelse(result == "Yes", paste0(percentage,"%"), ""), y = pos), position = "stack", color='white') +
+  coord_flip() + 
+  theme(legend.position = "bottom") +
+  theme(text = element_text(size=9)) +
+  theme(legend.title = element_blank()) +
+  ggtitle("Which of these things do you know how to do?") +
+  theme(plot.title = element_text(hjust = 2)) 
 ```
-Delete the record of which sites they have visited
-```{r, echo=FALSE}
-# Delete the record of which sites they have visited
-table(data$blocking_2)
-```
-Change privacy settings on social networking profile
-```{r, echo=FALSE}
-# Change privacy settings on social networking profile
-table(data$blocking_3)
-```
-Block messages from someone they don’t want to hear from
-```{r, echo=FALSE}
-# Block messages from someone they don’t want to hear from
-table(data$blocking_4)
-```
-Find information on how to use the internet safely
-```{r, echo=FALSE}
-# Find information on how to use the internet safely
-table(data$blocking_5)
-```
-Publish a comment on a blog, website or forum
-```{r, echo=FALSE}
-# Publish a comment on a blog, website or forum
-table(data$posting_1)
-```
-Upload images, videos or music onto social media
-```{r, echo=FALSE}
-# Upload images, videos or music onto social media
-table(data$posting_2)
-```
-Create a blog
-```{r, echo=FALSE}
-# Create a blog
-table(data$posting_3)
-```
-Update status on social networking site used most
-```{r, echo=FALSE}
-# Update status on social networking site used most
-table(data$updating_1)
-```
-Take a picture or a short video with smartphone and upload it on to social media
-```{r, echo=FALSE}
-# Take a picture or a short video with smartphone and upload it on to social media
-table(data$updating_2)
-```
-What do you like most about Facebook?
+
+
+#What do you like most about Facebook?
 ```{r, echo=FALSE}
 # What do you like most about Facebook?
 data$most.liked
 ```
-What do you like least about Facebook?
+#What do you like least about Facebook?
 ```{r, echo=FALSE}
 # What do you like least about Facebook?
 data$least.liked
 ```
 
-Do you know how Facebook, Instagram or Youtube decide which adverts appear in your news feed?
+
 ```{r, echo=FALSE}
 # Do you know how Facebook, Instagram or Youtube decide which adverts appear in your news feed?
 data$how.adverts.appear <- factor(data$how.adverts.appear, levels = c(1,2), labels = c("Yes", "No"))
-table(data$how.adverts.appear)
-
 ggplot(data=data, aes(x=how.adverts.appear, fill=how.adverts.appear)) +
-    geom_bar(colour = "black", stat="count") +
-    guides(fill=FALSE)
-
+  geom_bar(colour="black", stat="count") +
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(stat='count', aes(label=..count..), vjust=2, colour = "white") +
+  ggtitle("Do you know how Facebook, Instagram or Youtube decide\n which adverts appear?") +
+  guides(fill=FALSE)
 ```
 
-If yes, please explain how Facebook decides which adverts appear in your news feed.
+#If yes, please explain how Facebook decides which adverts appear in your news feed.
 ```{r, echo=FALSE}
 # If yes, please explain how Facebook decides which adverts appear in your news feed.
 data$explain.if.yes
 ```
 
-Thinking about the time you spend on the internet overall, what do you spend most time doing?  
+#Thinking about the time you spend on the internet overall, what do you spend most time doing?  
 ```{r, echo=FALSE}
 # Thinking about the time you spend on the internet overall, what do you spend most time doing?  
 data$most.time.spent
 ```
 
-Which internet platforms do you use the most? 
-Please number them in order of how much time you send on them. 1 = most often, 2 - second most often, etc. You can leave ones you don't use blank
 
-Facebook
+
+
+# Which internet platforms do you use the most? 
+Please number them in order of how much time you send on them. 1 = most often, 2 - second most often, etc. 
+You can leave ones you don't use as 0
+
+
 ```{r, echo=FALSE}
 # Facebook
-table(data$platforms_1)
 
 ggplot(data=data, aes(x=platforms_1, fill=platforms_1)) +
-    geom_bar(colour = "black", stat="count") +
-    guides(fill=FALSE)
+  geom_bar(colour = "black", stat="count") +
+  guides(fill=FALSE)+
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(stat='count', aes(label=..count..), vjust=2, colour = "white") +
+  ggtitle("Facebook") +
+  xlab("") 
 
 ```
 
-Snapchat
+
 ```{r, echo=FALSE}
 # Snapchat
-table(data$platforms_2)
+
 ggplot(data=data, aes(x=platforms_2, fill=platforms_2)) +
-    geom_bar(colour = "black", stat="count") +
-    guides(fill=FALSE)
+  geom_bar(colour = "black", stat="count") +
+  guides(fill=FALSE)+
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(stat='count', aes(label=..count..), vjust=2, colour = "white") +
+  ggtitle("Snapchat") +
+  xlab("") 
 
 ```
 
-Youtube
+
+
 ```{r, echo=FALSE}
-# Youtube
-table(data$platforms_3)
+
 ggplot(data=data, aes(x=platforms_3, fill=platforms_3)) +
-    geom_bar(colour = "black", stat="count") +
-    guides(fill=FALSE)
+  geom_bar(colour = "black", stat="count") +
+  guides(fill=FALSE)+
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(stat='count', aes(label=..count..), vjust=2, colour = "white") +
+  ggtitle("Youtube") +
+  xlab("") 
 
 
 ```
 
-WhatsApp
+
+
 ```{r, echo=FALSE}
 # WhatsApp
-table(data$platforms_4)
 
 ggplot(data=data, aes(x=platforms_4, fill=platforms_4)) +
-    geom_bar(colour = "black", stat="count") +
-    guides(fill=FALSE)
+  geom_bar(colour = "black", stat="count") +
+  guides(fill=FALSE) +
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(stat='count', aes(label=..count..), vjust=2, colour = "white") +
+  ggtitle("WhatsApp") +
+  xlab("") 
 
 
 ```
-Instagram
+
+
+
 ```{r, echo=FALSE}
 # Instagram
-table(data$platforms_5)
 
 ggplot(data=data, aes(x=platforms_5, fill=platforms_5)) +
-    geom_bar(colour = "black", stat="count") +
-    guides(fill=FALSE)
-
+  geom_bar(colour = "black", stat="count") +
+  guides(fill=FALSE)+
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(stat='count', aes(label=..count..), vjust=2, colour = "white") +
+  ggtitle("Instagram") +
+  xlab("") 
 
 ```
 
-Other
+
 ```{r, echo=FALSE}
 # Other
-table(data$platforms_6)
 ggplot(data=data, aes(x=platforms_6, fill=platforms_6)) +
-    geom_bar(colour = "black", stat="count") +
-    guides(fill=FALSE)
+  geom_bar(colour = "black", stat="count") +
+  guides(fill=FALSE)+
+  theme_economist() + 
+  scale_fill_economist() +
+  geom_text(stat='count', aes(label=..count..), vjust=2, colour = "white") +
+  ggtitle("Other") +
+  xlab("") 
+
 data$platforms_6_TEXT
-
-
 
 ```
 
