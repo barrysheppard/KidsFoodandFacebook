@@ -1,7 +1,7 @@
 ---
 title: "Product Analysis"
 author: "Barry Sheppard"
-date: "20 June 2016"
+date: "21 June 2016"
 output: pdf_document
 ---
 
@@ -9,7 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This is a breakdown of results based on products rather than factors. As there are a number of products which are only displayed to one gender, these results were adjusted to give a proportional value (i.e. values were divided by total number of participants in that gender and multiplied by the total number of participants).
+This is a breakdown of results based on products rather than factors. As there are a number of products which are only displayed to one gender, for totals these results were adjusted to give a proportional value (i.e. values were divided by total number of participants in that gender and multiplied by the total number of participants). Means are unadjusted.
 
 ```{r products, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -55,6 +55,8 @@ rm(brand.type.list)
 brand.endorsement.list <- c("P", "S", "C", "C", "P", "C", "N", "P", "C", "S", "P", "C", "S", "P", "C", "S", "P", "C", "S", "P", "C", "S", "P", "C", "S", "S", "C", "P", "P", "C", "S", "P", "C", "N", "P", "S", "C", "C", "C", "P", "S", "N", "N", "S", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N")
 brand.endorsement <- factor(brand.endorsement.list, levels= c("P", "C", "S", "N"), labels= c("Peer", "Celebrity","Sponsored", "Not Present"))
 rm(brand.endorsement.list)
+
+interaction <- interaction(brand.type, brand.endorsement)
 
 # Happy to Like
 happy.to.like.list.frequencies <- c(sum(data$happy.to.like_1, na.rm = TRUE))
@@ -115,10 +117,10 @@ happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$hap
 happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_56, na.rm = TRUE))
 
 # Combine into a dataframe
-happy.to.like.dataframe <- data.frame(brands, brand.type, brand.endorsement, happy.to.like.list.frequencies)
+happy.to.like.dataframe <- data.frame(brands, brand.type, brand.endorsement, happy.to.like.list.frequencies, interaction)
 ```
 
-## Willing to like Products by Type
+## Willing to like Products coloured by Type
 
 ```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 # Chart it sorted by brands
@@ -132,11 +134,25 @@ ggplot(data=happy.to.like.dataframe, aes(x=reorder(brands, happy.to.like.list.fr
   coord_flip()
 ```
 
-## Willing to like Products by Endorsement
+## Willing to like Products coloured by Endorsement
 
 ```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 # Chart it sorted by endorsement
 ggplot(data=happy.to.like.dataframe, aes(x=reorder(brands, happy.to.like.list.frequencies), y= happy.to.like.list.frequencies, fill=brand.endorsement)) +
+  geom_bar(stat="identity") +
+  scale_y_continuous("Number of Participants willing to like") + 
+  xlab("Brands") + 
+  scale_fill_discrete(name="Endorsement") +
+  theme_fivethirtyeight() + scale_fill_gdocs(name="Endorsement type") +
+  theme(text = element_text(size=20)) +
+  coord_flip()
+```
+
+## Willing to like Products coloured by Interaction
+
+```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+# Chart it sorted by endorsement
+ggplot(data=happy.to.like.dataframe, aes(x=reorder(brands, happy.to.like.list.frequencies), y= happy.to.like.list.frequencies, fill=interaction)) +
   geom_bar(stat="identity") +
   scale_y_continuous("Number of Participants willing to like") + 
   xlab("Brands") + 
@@ -219,14 +235,14 @@ familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_55, n
 familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_56, na.rm = TRUE))
 
 # Combine into a dataframe
-familiarity.dataframe <- data.frame(brands, brand.type, brand.endorsement, familiarity.frequencies)
+familiarity.dataframe <- data.frame(brands, brand.type, brand.endorsement, familiarity.frequencies, interaction)
 
 # Remove the brands that were not included in the profiles
 familiarity.dataframe<-familiarity.dataframe[!(familiarity.dataframe$brand.endorsement=="Not Present"),]
 
 ```
 
-## Prompted recall of brands by brand type
+## Prompted recall of brands coloured by brand type
 
 ```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 # Chart the results
@@ -239,7 +255,7 @@ ggplot(data=familiarity.dataframe, aes(x=reorder(brands, familiarity.frequencies
   coord_flip()
 ```
 
-## Prompted recall of brands by endorsement type
+## Prompted recall of brands coloured by endorsement type
 
 ```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 # Chart the results showing endorsement
@@ -252,4 +268,245 @@ ggplot(data=familiarity.dataframe, aes(x=reorder(brands, familiarity.frequencies
   coord_flip()
 
 ```
+
+## Prompted recall of brands coloured by interaction
+
+```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+# Chart the results showing endorsement
+ggplot(data=familiarity.dataframe, aes(x=reorder(brands, familiarity.frequencies), y=familiarity.frequencies, fill=interaction)) +
+  geom_bar(stat="identity") +
+  scale_y_continuous("Number of Participants indicating familiarity") + 
+  xlab("Brands") + 
+  theme_fivethirtyeight() + scale_fill_gdocs(name="Endorsement type") +
+  theme(text = element_text(size=20)) +
+  coord_flip()
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+# Note - A number of the brands are unique to gender, so that should be factored in. 
+# Maybe dividing by the n of that gender and multiplying by total members?
+
+
+# Profile Rating
+
+profile_ratings <- mean(cbind(data$f001a, data$m001a), na.rm = TRUE) # Ben & Jerries
+profile_ratings <- c(profile_ratings, mean(cbind(data$f003a, data$m003a), na.rm = TRUE)) # McDonalds
+profile_ratings <- c(profile_ratings, mean(cbind(data$f002a, data$m002a), na.rm = TRUE)) # Subway
+profile_ratings <- c(profile_ratings, mean(cbind(data$f036a, data$m036a), na.rm = TRUE)) # Luckies Smartphone projector 
+profile_ratings <- c(profile_ratings, mean(cbind(data$f004a, data$m004a), na.rm = TRUE)) # Tesco Muesli
+profile_ratings <- c(profile_ratings, mean(cbind(data$f005a, data$m005a), na.rm = TRUE)) # Good4U Seeds
+profile_ratings <- c(profile_ratings, NA) # Bord Bia 
+profile_ratings <- c(profile_ratings, mean(cbind(data$f007a, data$m007a), na.rm = TRUE)) # Jam 
+profile_ratings <- c(profile_ratings, mean(data$f008a, na.rm = TRUE)) # F = Dior Poison
+profile_ratings <- c(profile_ratings, mean(cbind(data$f009a, data$m009a), na.rm = TRUE)) # Sennheiser headphones
+profile_ratings <- c(profile_ratings, mean(cbind(data$f010a, data$m010a), na.rm = TRUE)) # Eddie Rockets
+profile_ratings <- c(profile_ratings, mean(cbind(data$f011a, data$m011a), na.rm = TRUE)) # KFC 
+profile_ratings <- c(profile_ratings, mean(cbind(data$f012a, data$m012a), na.rm = TRUE)) # Apache Pizza 
+profile_ratings <- c(profile_ratings, mean(cbind(data$f013a, data$m013a), na.rm = TRUE)) # Uncle Bens Brown Rice
+profile_ratings <- c(profile_ratings, mean(cbind(data$f014a, data$m014a), na.rm = TRUE)) # Danone Yoghurt
+profile_ratings <- c(profile_ratings, mean(cbind(data$f015a, data$m015a), na.rm = TRUE)) # Kelkin Rice Cakes
+profile_ratings <- c(profile_ratings, mean(cbind(data$f016a, data$m016a), na.rm = TRUE)) # H&M Denim
+profile_ratings <- c(profile_ratings, mean(data$f017a, na.rm = TRUE)) # F = Honest Beautys Truly Kissable
+profile_ratings <- c(profile_ratings, mean(cbind(data$f018a, data$m018a), na.rm = TRUE)) # Adidas Shoes
+profile_ratings <- c(profile_ratings, mean(cbind(data$f019a, data$m019a), na.rm = TRUE)) # Doritos
+profile_ratings <- c(profile_ratings, mean(cbind(data$f020a, data$m020a), na.rm = TRUE)) # Coco Pops
+profile_ratings <- c(profile_ratings, mean(cbind(data$f021a, data$m021a), na.rm = TRUE)) # Walkers crisps
+profile_ratings <- c(profile_ratings, mean(cbind(data$f022a, data$m022a), na.rm = TRUE)) # Weetabix
+profile_ratings <- c(profile_ratings, mean(cbind(data$f023a, data$m023a), na.rm = TRUE)) # Fyffes Bananas
+profile_ratings <- c(profile_ratings, mean(cbind(data$f024a, data$m024a), na.rm = TRUE)) # Chopped
+profile_ratings <- c(profile_ratings, mean(cbind(data$f025a, data$m025a), na.rm = TRUE)) # Penneys 
+profile_ratings <- c(profile_ratings, mean(data$f026a, na.rm = TRUE)) # F = Covergirl
+profile_ratings <- c(profile_ratings, mean(cbind(data$f027a, data$m027a), na.rm = TRUE)) # ASOS (Star Wars tshirt)
+profile_ratings <- c(profile_ratings, mean(cbind(data$f028a, data$m028a), na.rm = TRUE)) # Bunsen burgers
+profile_ratings <- c(profile_ratings, mean(cbind(data$f029a, data$m029a), na.rm = TRUE)) # Creme Egg
+profile_ratings <- c(profile_ratings, mean(cbind(data$f030a, data$m030a), na.rm = TRUE)) # Supermacs Chicken burger
+profile_ratings <- c(profile_ratings, mean(cbind(data$f031a, data$m031a), na.rm = TRUE)) # Special K 
+profile_ratings <- c(profile_ratings, mean(cbind(data$f032a, data$m032a), na.rm = TRUE)) # John West Tuna
+profile_ratings <- c(profile_ratings, NA) # The foods of athenry
+profile_ratings <- c(profile_ratings, mean(data$f034a, na.rm = TRUE)) # F= CB Tan
+profile_ratings <- c(profile_ratings, mean(cbind(data$f035a, data$m035a), na.rm = TRUE)) # Nike
+profile_ratings <- c(profile_ratings, mean(data$m008a, na.rm = TRUE)) # M = Under armor
+profile_ratings <- c(profile_ratings, mean(data$m017a, na.rm = TRUE)) # M = Unchartered 4
+profile_ratings <- c(profile_ratings, mean(data$m026a, na.rm = TRUE)) # M = Nerf
+profile_ratings <- c(profile_ratings, mean(data$m034a, na.rm = TRUE)) # M = Google Chromecast
+profile_ratings <- c(profile_ratings, mean(cbind(data$f033a, data$m033a), na.rm = TRUE)) # Irish Pride Healthy Grain
+profile_ratings <- c(profile_ratings, NA) # Burger King
+profile_ratings <- c(profile_ratings, NA) # Yoplait
+profile_ratings <- c(profile_ratings, mean(cbind(data$f006a, data$m006a), na.rm = TRUE)) # Keelings 
+profile_ratings <- c(profile_ratings, NA) # Avonmore
+profile_ratings <- c(profile_ratings, NA) # Tayto
+profile_ratings <- c(profile_ratings, NA) # Fruit & Fibre
+profile_ratings <- c(profile_ratings, NA) # Reebok
+profile_ratings <- c(profile_ratings, NA) # Domino's pizza
+profile_ratings <- c(profile_ratings, NA) # Hagen Daaz
+profile_ratings <- c(profile_ratings, NA) # Ready Brek
+profile_ratings <- c(profile_ratings, NA) # Dunnes
+profile_ratings <- c(profile_ratings, NA) # Cheetos
+profile_ratings <- c(profile_ratings, NA) # Kitkat
+profile_ratings <- c(profile_ratings, NA) # Alpen Muesli
+profile_ratings <- c(profile_ratings, NA) # Beats
+
+# Combine into a dataframe
+profile_ratings_dataframe <- data.frame(brands, brand.type, brand.endorsement, profile_ratings, interaction)
+
+# Remove the brands that were not included in the profiles
+profile_ratings_dataframe<-profile_ratings_dataframe[!(profile_ratings_dataframe$brand.endorsement=="Not Present"),]
+```
+
+## Mean profile ratings coloured by brand type
+
+```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+# Chart the results
+ggplot(data=profile_ratings_dataframe, aes(x=reorder(brands, profile_ratings), y=profile_ratings, fill=brand.type)) +
+  geom_bar(stat="identity") +
+  scale_y_continuous("Mean Rating by Profile") + 
+  xlab("Brands") + 
+  theme_fivethirtyeight() + scale_fill_gdocs(name="Brand type") +
+  theme(text = element_text(size=20)) +
+  coord_flip()
+```
+
+## Mean profile ratings coloured by endorsement type
+
+```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+# Chart the results showing endorsement
+ggplot(data=profile_ratings_dataframe, aes(x=reorder(brands, profile_ratings), y=profile_ratings, fill=brand.endorsement)) +
+  geom_bar(stat="identity") +
+  scale_y_continuous("Mean Rating by Profile") + 
+  xlab("Brands") + 
+  theme_fivethirtyeight() + scale_fill_gdocs(name="Endorsement type") +
+  theme(text = element_text(size=20)) +
+  coord_flip()
+
+```
+
+## Mean profile ratings coloured by interaction
+
+```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+# Chart the results showing endorsement
+ggplot(data=profile_ratings_dataframe, aes(x=reorder(brands, profile_ratings), y=profile_ratings, fill=interaction)) +
+  geom_bar(stat="identity") +
+  scale_y_continuous("Mean Rating by Profile") + 
+  xlab("Brands") + 
+  theme_fivethirtyeight() + scale_fill_gdocs(name="Endorsement type") +
+  theme(text = element_text(size=20)) +
+  coord_flip()
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+# Note - A number of the brands are unique to gender, so that should be factored in. 
+# Maybe dividing by the n of that gender and multiplying by total members?
+
+
+# Profile Rating
+
+profile_ratings <- mean(cbind(data$f001b1, data$m001b1), na.rm = TRUE) # Ben & Jerries
+profile_ratings <- c(profile_ratings, mean(cbind(data$f003b1, data$m003b1), na.rm = TRUE)) # McDonalds
+profile_ratings <- c(profile_ratings, mean(cbind(data$f002b1, data$m002b1), na.rm = TRUE)) # Subway
+profile_ratings <- c(profile_ratings, mean(cbind(data$f036b2, data$m036b2), na.rm = TRUE)) # Luckies Smartphone projector 
+profile_ratings <- c(profile_ratings, mean(cbind(data$f004b1, data$m004b1), na.rm = TRUE)) # Tesco Muesli
+profile_ratings <- c(profile_ratings, mean(cbind(data$f005b1, data$m005b1), na.rm = TRUE)) # Good4U Seeds
+profile_ratings <- c(profile_ratings, NA) # Bord Bia 
+profile_ratings <- c(profile_ratings, mean(cbind(data$f007b1, data$m007b1), na.rm = TRUE)) # Jam 
+profile_ratings <- c(profile_ratings, mean(data$f008b1, na.rm = TRUE)) # F = Dior Poison
+profile_ratings <- c(profile_ratings, mean(cbind(data$f009b1, data$m009b1), na.rm = TRUE)) # Sennheiser headphones
+profile_ratings <- c(profile_ratings, mean(cbind(data$f010b1, data$m010b1), na.rm = TRUE)) # Eddie Rockets
+profile_ratings <- c(profile_ratings, mean(cbind(data$f011b1, data$m011b1), na.rm = TRUE)) # KFC 
+profile_ratings <- c(profile_ratings, mean(cbind(data$f012b1, data$m012b1), na.rm = TRUE)) # Apache Pizza 
+profile_ratings <- c(profile_ratings, mean(cbind(data$f013b1, data$m013b1), na.rm = TRUE)) # Uncle Bens Brown Rice
+profile_ratings <- c(profile_ratings, mean(cbind(data$f014b1, data$m014b1), na.rm = TRUE)) # Danone Yoghurt
+profile_ratings <- c(profile_ratings, mean(cbind(data$f015b1, data$m015b1), na.rm = TRUE)) # Kelkin Rice Cakes
+profile_ratings <- c(profile_ratings, mean(cbind(data$f016b1, data$m016b1), na.rm = TRUE)) # H&M Denim
+profile_ratings <- c(profile_ratings, mean(data$f017b1, na.rm = TRUE)) # F = Honest Beautys Truly Kissable
+profile_ratings <- c(profile_ratings, mean(cbind(data$f018b1, data$m018b1), na.rm = TRUE)) # Adidas Shoes
+profile_ratings <- c(profile_ratings, mean(cbind(data$f019b2, data$m019b2), na.rm = TRUE)) # Doritos
+profile_ratings <- c(profile_ratings, mean(cbind(data$f020b2, data$m020b2), na.rm = TRUE)) # Coco Pops
+profile_ratings <- c(profile_ratings, mean(cbind(data$f021b2, data$m021b2), na.rm = TRUE)) # Walkers crisps
+profile_ratings <- c(profile_ratings, mean(cbind(data$f022b2, data$m022b2), na.rm = TRUE)) # Weetabix
+profile_ratings <- c(profile_ratings, mean(cbind(data$f023b2, data$m023b2), na.rm = TRUE)) # Fyffes Bananas
+profile_ratings <- c(profile_ratings, mean(cbind(data$f024b2, data$m024b2), na.rm = TRUE)) # Chopped
+profile_ratings <- c(profile_ratings, mean(cbind(data$f025b2, data$m025b2), na.rm = TRUE)) # Penneys 
+profile_ratings <- c(profile_ratings, mean(data$f026b2, na.rm = TRUE)) # F = Covergirl
+profile_ratings <- c(profile_ratings, mean(cbind(data$f027b2, data$m027b2), na.rm = TRUE)) # ASOS (Star Wars tshirt)
+profile_ratings <- c(profile_ratings, mean(cbind(data$f028b2, data$m028b2), na.rm = TRUE)) # Bunsen burgers
+profile_ratings <- c(profile_ratings, mean(cbind(data$f029b2, data$m029b2), na.rm = TRUE)) # Creme Egg
+profile_ratings <- c(profile_ratings, mean(cbind(data$f030b2, data$m030b2), na.rm = TRUE)) # Supermacs Chicken burger
+profile_ratings <- c(profile_ratings, mean(cbind(data$f031b2, data$m031b2), na.rm = TRUE)) # Special K 
+profile_ratings <- c(profile_ratings, mean(cbind(data$f032b2, data$m032b2), na.rm = TRUE)) # John West Tuna
+profile_ratings <- c(profile_ratings, NA) # The foods of athenry
+profile_ratings <- c(profile_ratings, mean(data$f034b2, na.rm = TRUE)) # F= CB Tan
+profile_ratings <- c(profile_ratings, mean(cbind(data$f035b2, data$m035b2), na.rm = TRUE)) # Nike
+profile_ratings <- c(profile_ratings, mean(data$m008b1, na.rm = TRUE)) # M = Under armor
+profile_ratings <- c(profile_ratings, mean(data$m017b1, na.rm = TRUE)) # M = Unchartered 4
+profile_ratings <- c(profile_ratings, mean(data$m026b2, na.rm = TRUE)) # M = Nerf
+profile_ratings <- c(profile_ratings, mean(data$m034b2, na.rm = TRUE)) # M = Google Chromecast
+profile_ratings <- c(profile_ratings, mean(cbind(data$f033b2, data$m033b2), na.rm = TRUE)) # Irish Pride Healthy Grain
+profile_ratings <- c(profile_ratings, NA) # Burger King
+profile_ratings <- c(profile_ratings, NA) # Yoplait
+profile_ratings <- c(profile_ratings, mean(cbind(data$f006b2, data$m006b2), na.rm = TRUE)) # Keelings 
+profile_ratings <- c(profile_ratings, NA) # Avonmore
+profile_ratings <- c(profile_ratings, NA) # Tayto
+profile_ratings <- c(profile_ratings, NA) # Fruit & Fibre
+profile_ratings <- c(profile_ratings, NA) # Reebok
+profile_ratings <- c(profile_ratings, NA) # Domino's pizza
+profile_ratings <- c(profile_ratings, NA) # Hagen Daaz
+profile_ratings <- c(profile_ratings, NA) # Ready Brek
+profile_ratings <- c(profile_ratings, NA) # Dunnes
+profile_ratings <- c(profile_ratings, NA) # Cheetos
+profile_ratings <- c(profile_ratings, NA) # Kitkat
+profile_ratings <- c(profile_ratings, NA) # Alpen Muesli
+profile_ratings <- c(profile_ratings, NA) # Beats
+
+# Combine into a dataframe
+profile_ratings_dataframe <- data.frame(brands, brand.type, brand.endorsement, profile_ratings, interaction)
+
+# Remove the brands that were not included in the profiles
+profile_ratings_dataframe<-profile_ratings_dataframe[!(profile_ratings_dataframe$brand.endorsement=="Not Present"),]
+```
+
+## Mean post ratings coloured by brand type
+
+```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+# Chart the results
+ggplot(data=profile_ratings_dataframe, aes(x=reorder(brands, profile_ratings), y=profile_ratings, fill=brand.type)) +
+  geom_bar(stat="identity") +
+  scale_y_continuous("Mean Rating by Profile") + 
+  xlab("Brands") + 
+  theme_fivethirtyeight() + scale_fill_gdocs(name="Brand type") +
+  theme(text = element_text(size=20)) +
+  coord_flip()
+```
+
+## Mean post ratings coloured by endorsement type
+
+```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+# Chart the results showing endorsement
+ggplot(data=profile_ratings_dataframe, aes(x=reorder(brands, profile_ratings), y=profile_ratings, fill=brand.endorsement)) +
+  geom_bar(stat="identity") +
+  scale_y_continuous("Mean Rating by Profile") + 
+  xlab("Brands") + 
+  theme_fivethirtyeight() + scale_fill_gdocs(name="Endorsement type") +
+  theme(text = element_text(size=20)) +
+  coord_flip()
+```
+
+## Mean post ratings coloured by interaction
+
+```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+# Chart the results showing endorsement
+ggplot(data=profile_ratings_dataframe, aes(x=reorder(brands, profile_ratings), y=profile_ratings, fill=interaction)) +
+  geom_bar(stat="identity") +
+  scale_y_continuous("Mean Rating by Profile") + 
+  xlab("Brands") + 
+  theme_fivethirtyeight() + scale_fill_gdocs(name="Endorsement type") +
+  theme(text = element_text(size=20)) +
+  coord_flip()
+```
+
 
