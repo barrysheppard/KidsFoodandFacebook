@@ -1,0 +1,255 @@
+---
+title: "Product Analysis"
+author: "Barry Sheppard"
+date: "20 June 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is a breakdown of results based on products rather than factors. As there are a number of products which are only displayed to one gender, these results were adjusted to give a proportional value (i.e. values were divided by total number of participants in that gender and multiplied by the total number of participants).
+
+```{r products, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+# Set working director
+setwd("~/GitHub/KidsFoodandFacebook")
+
+# Import Libraries required
+
+# install.packages("magrittr")
+library("magrittr")
+# install.packages("tidyr")
+library("tidyr")
+# install.packages("ggplot2")
+library("ggplot2")
+# install.packages("cowplot")
+library("cowplot")
+# install.packages("plyr")
+library("plyr")
+# install.packages("psych)
+library("psych")
+
+library(ggthemes)
+
+# Load the data
+source("load.R", print.eval=TRUE)
+
+# Familiarity totals
+
+# Brand list
+brands <- c("Ben & Jerries", "McDonalds", "Subway", "Luckies", "Tesco", "Good4U", "Bord Bia", "Jam", "Dior", "Sennheiser", "Eddie Rockets")
+brands <- c(brands, "KFC", "Apache Pizza", "Uncle Bens Rice", "Danone", "Kelkin", "H&M", "Truly Kissable", "Adidas", "Doritos", "Coco pops")
+brands <- c(brands, "Walkers", "Weetabix", "Fyffes", "Chopped", "Penneys", "Covergirl", "ASOS", "Bunsen", "Creme Egg", "Supermacs", "Special K")
+brands <- c(brands, "John West", "The Foods of Athenry", "CB tanning", "Nike", "Under armor", "Uncharted 4", "Nerf", "Google", "Irish Pride")
+brands <- c(brands, "Burger King", "Yoplait", "Keelings", "Avonmore", "Tayto", "Fruit & Fibre", "Reebok", "Domino's Pizza", "Hagen Daaz", "Ready Brek")
+brands <- c(brands, "Dunnes", "Cheetos", "Kitkat", "Alpen Muesli", "Beats")
+
+# Brand Type
+brand.type.list <- c("UF", "UF", "UF", "NF", "HF", "HF", "HF", "NF", "NF", "NF", "UF", "UF", "UF", "HF", "HF", "HF", "NF", "NF", "NF", "UF", "UF", "UF", "HF", "HF", "HF", "NF", "NF", "NF", "UF", "UF", "UF", "HF", "HF", "HF", "NF", "NF", "NF", "NF", "NF", "NF", "HF", "UF", "HF", "HF", "HF", "UF", "HF", "NF", "UF", "UF", "HF", "NF", "UF", "UF", "HF", "NF")
+brand.type <- factor (brand.type.list, levels= c("UF", "HF", "NF"), labels= c("Unhealthy Food", "Healthy Food","Non-Food"))
+rm(brand.type.list)
+
+# Endorsement Type + Presence
+brand.endorsement.list <- c("P", "S", "C", "C", "P", "C", "N", "P", "C", "S", "P", "C", "S", "P", "C", "S", "P", "C", "S", "P", "C", "S", "P", "C", "S", "S", "C", "P", "P", "C", "S", "P", "C", "N", "P", "S", "C", "C", "C", "P", "S", "N", "N", "S", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N", "N")
+brand.endorsement <- factor(brand.endorsement.list, levels= c("P", "C", "S", "N"), labels= c("Peer", "Celebrity","Sponsored", "Not Present"))
+rm(brand.endorsement.list)
+
+# Happy to Like
+happy.to.like.list.frequencies <- c(sum(data$happy.to.like_1, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_2, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_3, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_4, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_5, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_6, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_7, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_8, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_9, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_10, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_11, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_12, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_13, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_14, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_15, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_16, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_17, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_18, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_19, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_20, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_21, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_22, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_23, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_24, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_25, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_26, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_27, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_28, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_29, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_30, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_31, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_32, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_33, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_34, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_35, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_36, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_37, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_38, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_39, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_40, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_41, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_42, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_43, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_44, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_45, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_46, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_47, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_48, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_49, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_50, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_51, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_52, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_53, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_54, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_55, na.rm = TRUE))
+happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$happy.to.like_56, na.rm = TRUE))
+
+# Combine into a dataframe
+happy.to.like.dataframe <- data.frame(brands, brand.type, brand.endorsement, happy.to.like.list.frequencies)
+```
+
+## Willing to like Products by Type
+
+```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+# Chart it sorted by brands
+ggplot(data=happy.to.like.dataframe, aes(x=reorder(brands, happy.to.like.list.frequencies), y= happy.to.like.list.frequencies, fill=brand.type)) +
+  geom_bar(stat="identity") +
+  scale_y_continuous("Number of Participants willing to like") + 
+  xlab("Brands") + 
+  scale_fill_discrete(name="Brand type") +
+  theme_fivethirtyeight() + scale_fill_gdocs(name="Brand type") +
+  theme(text = element_text(size=20)) +
+  coord_flip()
+```
+
+## Willing to like Products by Endorsement
+
+```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+# Chart it sorted by endorsement
+ggplot(data=happy.to.like.dataframe, aes(x=reorder(brands, happy.to.like.list.frequencies), y= happy.to.like.list.frequencies, fill=brand.endorsement)) +
+  geom_bar(stat="identity") +
+  scale_y_continuous("Number of Participants willing to like") + 
+  xlab("Brands") + 
+  scale_fill_discrete(name="Endorsement") +
+  theme_fivethirtyeight() + scale_fill_gdocs(name="Endorsement type") +
+  theme(text = element_text(size=20)) +
+  coord_flip()
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+# Note - A number of the brands are unique to gender, so that should be factored in. 
+# Maybe dividing by the n of that gender and multiplying by total members?
+
+
+# Familiarity
+
+# These scores are adjusted by gender
+total.male <- sum(data$gender == 1)
+total.female <- sum(data$gender == 2)
+total.participants <- total.male + total.female
+
+familiarity.frequencies <- c(sum(data$familiarity_1, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_2, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_3, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_4, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_5, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_6, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_7, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_8, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_9, na.rm = TRUE)*total.participants/total.female)
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_10, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_11, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_12, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_13, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_14, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_15, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_16, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_17, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_18, na.rm = TRUE)*total.participants/total.female)
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_19, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_20, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_21, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_22, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_23, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_24, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_25, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_26, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_27, na.rm = TRUE)*total.participants/total.female)
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_28, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_29, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_30, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_31, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_32, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_33, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_34, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_35, na.rm = TRUE)*total.participants/total.female)
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_36, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_37, na.rm = TRUE)*total.participants/total.male)
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_38, na.rm = TRUE)*total.participants/total.male)
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_39, na.rm = TRUE)*total.participants/total.male)
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_40, na.rm = TRUE)*total.participants/total.male)
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_41, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_42, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_43, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_44, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_45, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_46, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_47, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_48, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_49, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_50, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_51, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_52, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_53, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_54, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_55, na.rm = TRUE))
+familiarity.frequencies <- c(familiarity.frequencies, sum(data$familiarity_56, na.rm = TRUE))
+
+# Combine into a dataframe
+familiarity.dataframe <- data.frame(brands, brand.type, brand.endorsement, familiarity.frequencies)
+
+# Remove the brands that were not included in the profiles
+familiarity.dataframe<-familiarity.dataframe[!(familiarity.dataframe$brand.endorsement=="Not Present"),]
+
+```
+
+## Prompted recall of brands by brand type
+
+```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+# Chart the results
+ggplot(data=familiarity.dataframe, aes(x=reorder(brands, familiarity.frequencies), y=familiarity.frequencies, fill=brand.type)) +
+  geom_bar(stat="identity") +
+  scale_y_continuous("Number of Participants indicating familiarity") + 
+  xlab("Brands") + 
+  theme_fivethirtyeight() + scale_fill_gdocs(name="Brand type") +
+  theme(text = element_text(size=20)) +
+  coord_flip()
+```
+
+## Prompted recall of brands by endorsement type
+
+```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+# Chart the results showing endorsement
+ggplot(data=familiarity.dataframe, aes(x=reorder(brands, familiarity.frequencies), y=familiarity.frequencies, fill=brand.endorsement)) +
+  geom_bar(stat="identity") +
+  scale_y_continuous("Number of Participants indicating familiarity") + 
+  xlab("Brands") + 
+  theme_fivethirtyeight() + scale_fill_gdocs(name="Endorsement type") +
+  theme(text = element_text(size=20)) +
+  coord_flip()
+
+```
+
