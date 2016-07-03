@@ -17,20 +17,12 @@ This is a breakdown of results based on products rather than factors. As there a
 setwd("~/GitHub/KidsFoodandFacebook")
 
 # Import Libraries required
-
-# install.packages("magrittr")
 library("magrittr")
-# install.packages("tidyr")
 library("tidyr")
-# install.packages("ggplot2")
 library("ggplot2")
-# install.packages("cowplot")
 library("cowplot")
-# install.packages("plyr")
 library("plyr")
-# install.packages("psych)
 library("psych")
-
 library(ggthemes)
 
 # Load the data
@@ -120,31 +112,33 @@ happy.to.like.list.frequencies <- c(happy.to.like.list.frequencies, sum(data$hap
 happy.to.like.dataframe <- data.frame(brands, brand.type, brand.endorsement, happy.to.like.list.frequencies, interaction)
 ```
 
-## Willing to like Products coloured by Type
+## 
 
 ```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 # Chart it sorted by brands
 ggplot(data=happy.to.like.dataframe, aes(x=reorder(brands, happy.to.like.list.frequencies), y= happy.to.like.list.frequencies, fill=brand.type)) +
-  geom_bar(stat="identity") +
+  geom_bar(stat = "identity", position = position_dodge(width=1)) + 
+  theme_fivethirtyeight() + 
+  theme(panel.grid.major.y = element_blank()) +
+  scale_fill_manual(name="Brand type",
+                    breaks=c("Unhealthy Food", "Healthy Food", "Non-Food"), 
+                    values=c("#F15A60", "#7AC36A", "#5A9BD4")) +
   scale_y_continuous("Number of Participants willing to like") + 
-  xlab("Brands") + 
-  scale_fill_discrete(name="Brand type") +
-  theme_fivethirtyeight() + scale_fill_gdocs(name="Brand type") +
-  theme(text = element_text(size=20)) +
+  ggtitle("Willing to like: Products coloured by Type") +
+  theme(text = element_text(size=20), plot.title = element_text(size=32, hjust=0)) +
   coord_flip()
 ```
 
-## Willing to like Products coloured by Endorsement
+##  
 
 ```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 # Chart it sorted by endorsement
 ggplot(data=happy.to.like.dataframe, aes(x=reorder(brands, happy.to.like.list.frequencies), y= happy.to.like.list.frequencies, fill=brand.endorsement)) +
-  geom_bar(stat="identity") +
-  scale_y_continuous("Number of Participants willing to like") + 
-  xlab("Brands") + 
-  scale_fill_discrete(name="Endorsement") +
+  geom_bar(stat = "identity", position = position_dodge(width=1)) + 
   theme_fivethirtyeight() + scale_fill_gdocs(name="Endorsement type") +
-  theme(text = element_text(size=20)) +
+  theme(panel.grid.major.y = element_blank()) +
+  ggtitle("Willing to like: Products coloured by Endorsement") +
+  theme(text = element_text(size=20), plot.title = element_text(size=32, hjust=0)) +
   coord_flip()
 ```
 
@@ -156,7 +150,6 @@ ggplot(data=happy.to.like.dataframe, aes(x=reorder(brands, happy.to.like.list.fr
   geom_bar(stat="identity") +
   scale_y_continuous("Number of Participants willing to like") + 
   xlab("Brands") + 
-  scale_fill_discrete(name="Endorsement") +
   theme_fivethirtyeight() + scale_fill_gdocs(name="Endorsement type") +
   theme(text = element_text(size=20)) +
   coord_flip()
@@ -169,12 +162,9 @@ ggplot(data=happy.to.like.dataframe, aes(x=reorder(brands, happy.to.like.list.fr
 # Note - A number of the brands are unique to gender, so that should be factored in. 
 # Maybe dividing by the n of that gender and multiplying by total members?
 
-
-# Familiarity
-
 # These scores are adjusted by gender
-total.male <- sum(data$gender == 1)
-total.female <- sum(data$gender == 2)
+total.male <- sum(data$gender == "Male")
+total.female <- sum(data$gender == "Female")
 total.participants <- total.male + total.female
 
 familiarity.frequencies <- c(sum(data$familiarity_1, na.rm = TRUE))
@@ -250,7 +240,10 @@ ggplot(data=familiarity.dataframe, aes(x=reorder(brands, familiarity.frequencies
   geom_bar(stat="identity") +
   scale_y_continuous("Number of Participants indicating familiarity") + 
   xlab("Brands") + 
-  theme_fivethirtyeight() + scale_fill_gdocs(name="Brand type") +
+  theme_fivethirtyeight() + 
+  scale_fill_manual(name="Brand type",
+                    breaks=c("Unhealthy Food", "Healthy Food", "Non-Food"), 
+                    values=c("#F15A60", "#7AC36A", "#5A9BD4")) +
   theme(text = element_text(size=20)) +
   coord_flip()
 ```
@@ -266,7 +259,6 @@ ggplot(data=familiarity.dataframe, aes(x=reorder(brands, familiarity.frequencies
   theme_fivethirtyeight() + scale_fill_gdocs(name="Endorsement type") +
   theme(text = element_text(size=20)) +
   coord_flip()
-
 ```
 
 ## Prompted recall of brands coloured by interaction
@@ -364,7 +356,10 @@ ggplot(data=profile_ratings_dataframe, aes(x=reorder(brands, profile_ratings), y
   geom_bar(stat="identity") +
   scale_y_continuous("Mean Rating by Profile") + 
   xlab("Brands") + 
-  theme_fivethirtyeight() + scale_fill_gdocs(name="Brand type") +
+  theme_fivethirtyeight() + 
+  scale_fill_manual(name="Brand type",
+                    breaks=c("Unhealthy Food", "Healthy Food", "Non-Food"), 
+                    values=c("#F15A60", "#7AC36A", "#5A9BD4")) +
   theme(text = element_text(size=20)) +
   coord_flip()
 ```
@@ -373,13 +368,13 @@ ggplot(data=profile_ratings_dataframe, aes(x=reorder(brands, profile_ratings), y
 
 ```{r fig.width=14, fig.height=20, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 # Chart the results showing endorsement
-ggplot(data=profile_ratings_dataframe, aes(x=reorder(brands, profile_ratings), y=profile_ratings, fill=brand.endorsement)) +
-  geom_bar(stat="identity") +
-  scale_y_continuous("Mean Rating by Profile") + 
-  xlab("Brands") + 
-  theme_fivethirtyeight() + scale_fill_gdocs(name="Endorsement type") +
-  theme(text = element_text(size=20)) +
-  coord_flip()
+  ggplot(data=profile_ratings_dataframe, aes(x=reorder(brands, profile_ratings), y=profile_ratings, fill=brand.endorsement)) +
+    geom_bar(stat="identity") +
+    scale_y_continuous("Mean Rating by Profile") + 
+    xlab("Brands") + 
+    theme_fivethirtyeight() + scale_fill_gdocs(name="Endorsement type") +
+    theme(text = element_text(size=20)) +
+    coord_flip()
 
 ```
 
@@ -478,7 +473,10 @@ ggplot(data=profile_ratings_dataframe, aes(x=reorder(brands, profile_ratings), y
   geom_bar(stat="identity") +
   scale_y_continuous("Mean Rating by Profile") + 
   xlab("Brands") + 
-  theme_fivethirtyeight() + scale_fill_gdocs(name="Brand type") +
+  theme_fivethirtyeight() + 
+  scale_fill_manual(name="Brand type",
+                    breaks=c("Unhealthy Food", "Healthy Food", "Non-Food"), 
+                    values=c("#F15A60", "#7AC36A", "#5A9BD4")) +
   theme(text = element_text(size=20)) +
   coord_flip()
 ```

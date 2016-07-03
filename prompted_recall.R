@@ -9,6 +9,29 @@ library(MASS)
 mytable <- xtabs(~recall+product+endorse, data=prompted_recall)
 
 
+# Bayes Factors see http://link.springer.com/article/10.3758/s13428-016-0739-8
+# Poisson sampling scheme 
+library(BayesFactor)
+BFP_10 <- contingencyTableBF(mytable,
+                   sampleType = "poisson",
+                   priorConcentration = 1)
+
+BFP_10@bayesFactor$bf
+
+# Joint Multinomial sampling scheme
+BFM_10 <- contingencyTableBF(mytable,
+                             sampleType = "jointMulti",
+                             priorConcentration = 1)
+
+BFM_10@bayesFactor$bf
+
+# Indepdenent multinominal sampling scheme <- I think this is the one
+BFI_10 <- contingencyTableBF(mytable,
+                             sampleType = "indepMulti",
+                             fixedMargin = "cols",
+                             priorConcentration = 1)
+BFI_10@bayesFactor$bf
+
 # Mutual Independence: A, B, and C are pairwise independent.
 loglm(~recall+product+endorse, mytable)
 # Partial Independence: A is partially independent of B and C (i.e., A is independent of the composite variable BC).
