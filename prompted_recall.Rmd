@@ -2,25 +2,27 @@
 title: "Prompted Recall"
 author: "Barry Sheppard"
 date: "16 June 2016"
-output: pdf_document
+output: html_document
 ---
 
 
 
 ```{r load, include=FALSE}
 # Loading up some data
+library(plyr)
+library(dplyr)
 library(tidyr)
 library(psych)
 library(BayesFactor)
 library(MASS)
 library(vcd)
 library(vcdExtra)
+library(gmodels)
 
 source("load.R", print.eval=TRUE)
 
 # Rename for the graph
-library(plyr)
-prompted_recall <- rename(prompted_recall, c("recall"="Recall", "product"="Product", "endorse"="Endorsement"))
+prompted_recall <- plyr::rename(prompted_recall, c("recall"="Recall", "product"="Product", "endorse"="Endorsement"))
 
 # Table for prompted Recall
 prompted_recall_table <- xtabs(~Product + Endorsement + Recall, data=prompted_recall)
@@ -33,55 +35,50 @@ prompted_recall_table <- xtabs(~Product + Endorsement + Recall, data=prompted_re
 
 ```{r, echo=FALSE}
 # count the total responses per person (only valid responses)
-print(c("Mean of responses", mean(data$total_fam[fam_true])))
-print(c("Standard deviation of responses", sd(data$total_fam[fam_true])))
+print(c("Mean of responses", round(mean(data$total_fam[fam_true]), 2)))
+print(c("Standard deviation of responses", round(sd(data$total_fam[fam_true]),2)))
 
 # Count of correct data
-print(c("Mean of correct responses", mean(rating$count)))
-print(c("Standard deviation of correct responses", sd(rating$count)))
-
+print(c("Mean of correct responses", round(mean(rating$count),2)))
+print(c("Standard deviation of correct responses", round(sd(rating$count),2)))
 ```
 
 ## 2x2 Breakdowns - Products
 
 ### Product: Healthy vs Unhealthy
 
-```{r, echo=FALSE}
-
+```{r, echo=FALSE, error=FALSE}
 # Subset the data to remove NonFood so we can compare Unhealthy and Healthy 
 data_subset <- subset(prompted_recall, Product!="NonFood")
 # Refactor Product to remove the unused factor
 data_subset$Product <- factor(data_subset$Product)
 # Prepare the data
 prompted_recall_table_1 <- xtabs(~ Product + Recall, data_subset)
-# Prepare the chart
-model_pois <- glm(Freq ~ Product + Recall, family = poisson, data = prompted_recall_table_1)
-mosaic(model_pois, ~ Product + Recall, residuals_type="rstandard", labeling=labeling_values())
 # Show the data
 ftable(data_subset)
 
-summary(model_pois)
 # Summarise the results
 P1 <- summary(prompted_recall_table_1)
 P1
 print(c("P = ", format(P1$p.value, scientific=FALSE)))
 
-# Bayes Factors - Poisson
-BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "poisson")
-BF
-print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
-
-# This is a Log Linear version of the same
-
-model_joint_indep <- loglm(formula = ~ Product + Recall, data=prompted_recall_table_1)
-plot(model_joint_indep, panel = mosaic, type = "observed", residuals_type = "pearson", gp = shading_hcl, gp_args = list(), pop=FALSE, shade=TRUE, legend=TRUE)
-labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
-summary(model_joint_indep)
-
 # Bayes Factors - indepMultinomial, generalised form
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
 print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
+
+# This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
+model_joint_indep <- loglm(formula = ~ Product + Recall, data=prompted_recall_table_1)
+plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
+labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
+
+# To start over with Andy Fields version
+
+# Product 
+Product <- prompted_recall$Product[prompted_recall$Product!="NonFood"]
+Recall <- prompted_recall$Recall[prompted_recall$Product!="NonFood"]
+CrossTable(Product, Recall, fisher = TRUE, chisq = TRUE, expected = TRUE, sresid = TRUE, format = "SPSS", digits = 2)
+
 ```
 
 ### Product: Nonfood vs Unhealthy
@@ -94,12 +91,8 @@ data_subset <- subset(prompted_recall, Product!="Healthy")
 data_subset$Product <- factor(data_subset$Product)
 # Prepare the data
 prompted_recall_table_1 <- xtabs(~Product + Recall, data_subset)
-# Prepare the chart
-model_pois <- glm(Freq ~ Product + Recall, family = poisson, data = prompted_recall_table_1)
-mosaic(model_pois, ~ Product + Recall, residuals_type="rstandard", labeling=labeling_values())
 # Show the data
 ftable(data_subset)
-summary(model_pois)
 # Summarise results 
 P1 <- summary(prompted_recall_table_1)
 P1
@@ -108,6 +101,10 @@ print(c("P = ", format(P1$p.value, scientific=FALSE)))
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
 print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
+# This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
+model_joint_indep <- loglm(formula = ~ Product + Recall, data=prompted_recall_table_1)
+plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
+labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
 ```
 
 ### Product: Healthy vs Nonfood
@@ -119,12 +116,8 @@ data_subset <- subset(prompted_recall, Product!="Unhealthy")
 data_subset$Product <- factor(data_subset$Product)
 # Prepare the data
 prompted_recall_table_1 <- xtabs(~Product + Recall, data_subset)
-# Prepare the chart
-model_pois <- glm(Freq ~ Product + Recall, family = poisson, data = prompted_recall_table_1)
-mosaic(model_pois, ~ Product + Recall, residuals_type="rstandard", labeling=labeling_values())
 # Show the data
 ftable(data_subset)
-summary(model_pois)
 # Summarise results 
 P1 <- summary(prompted_recall_table_1)
 P1
@@ -133,7 +126,10 @@ print(c("P = ", format(P1$p.value, scientific=FALSE)))
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
 print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
-
+# This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
+model_joint_indep <- loglm(formula = ~ Product + Recall, data=prompted_recall_table_1)
+plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
+labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
 ```
 
 
@@ -148,12 +144,8 @@ data_subset <- subset(prompted_recall, Endorsement!="Sponsored")
 data_subset$Endorsement <- factor(data_subset$Endorsement)
 # Prepare the data
 prompted_recall_table_1 <- xtabs(~Endorsement + Recall, data_subset)
-# Prepare the chart
-model_pois <- glm(Freq ~ Endorsement + Recall, family = poisson, data = prompted_recall_table_1)
-mosaic(model_pois, ~ Endorsement + Recall, residuals_type="rstandard", labeling=labeling_values())
 # Show the data
 ftable(data_subset)
-summary(model_pois)
 # Summarise results 
 P1 <- summary(prompted_recall_table_1)
 P1
@@ -162,7 +154,10 @@ print(c("P = ", format(P1$p.value, scientific=FALSE)))
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
 print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
-
+# This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
+model_joint_indep <- loglm(formula = ~ Endorsement + Recall, data=prompted_recall_table_1)
+plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
+labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
 ```
 
 ### Endorsement: Peer vs Sponsored
@@ -175,12 +170,8 @@ data_subset <- subset(prompted_recall, Endorsement!="Celebrity")
 data_subset$Endorsement <- factor(data_subset$Endorsement)
 # Prepare the data
 prompted_recall_table_1 <- xtabs(~Endorsement + Recall, data_subset)
-# Prepare the chart
-model_pois <- glm(Freq ~ Endorsement + Recall, family = poisson, data = prompted_recall_table_1)
-mosaic(model_pois, ~ Endorsement + Recall, residuals_type="rstandard", labeling=labeling_values())
 # Show the data
 ftable(data_subset)
-summary(model_pois)
 # Summarise results 
 P1 <- summary(prompted_recall_table_1)
 P1
@@ -189,7 +180,10 @@ print(c("P = ", format(P1$p.value, scientific=FALSE)))
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
 print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
-
+# This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
+model_joint_indep <- loglm(formula = ~ Endorsement + Recall, data=prompted_recall_table_1)
+plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
+labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
 ```
 
 ### Endorsement: Celebrity vs Sponsored
@@ -202,12 +196,8 @@ data_subset <- subset(prompted_recall, Endorsement!="Peer")
 data_subset$Endorsement <- factor(data_subset$Endorsement)
 # Prepare the data
 prompted_recall_table_1 <- xtabs(~Endorsement + Recall, data_subset)
-# Prepare the chart
-model_pois <- glm(Freq ~ Endorsement + Recall, family = poisson, data = prompted_recall_table_1)
-mosaic(model_pois, ~ Endorsement + Recall, residuals_type="rstandard", labeling=labeling_values())
 # Show the data
 ftable(data_subset)
-summary(model_pois)
 # Summarise results 
 P1 <- summary(prompted_recall_table_1)
 P1
@@ -216,7 +206,10 @@ print(c("P = ", format(P1$p.value, scientific=FALSE)))
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
 print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
-
+# This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
+model_joint_indep <- loglm(formula = ~ Endorsement + Recall, data=prompted_recall_table_1)
+plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
+labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
 ```
 
 
@@ -229,6 +222,7 @@ Full interaction of Product * endorsement * Recall
 # Table the prompted Recall table
 ftable(prompted_recall_table)
 table <- ftable(prompted_recall_table)
+print("Percentages")
 round(prop.table(table, 1),2)
 
 # Xtabs for the prompoted Recall
@@ -240,140 +234,29 @@ BF1 <- contingencyTableBF(prompted_recall_table, sampleType = "indepMulti", fixe
 BF1
 print(c("BF10:", format(exp(BF1@bayesFactor$bf), scientific=FALSE)))
 
-indep <- glm(Freq ~ Endorsement * Product + Recall, family = poisson, data = prompted_recall_table)
-mosaic(indep, ~ Product * Endorsement + Recall, residuals_type="rstandard", labeling=labeling_values())
-summary(indep)
-
 ```
 
 
-Endorsement * Product
-This should appear as a symmetrical 3 x 3 square as there are an equal number of all combinations
-
-```{r, echo=FALSE}
-# Endorsement * Product
-T1 <- margin.table(prompted_recall_table, c(1,2)) 
-T1
-summary(T1)
-mosaic(T1, shade=TRUE, legend=FALSE, pop=FALSE)
-labeling_cells(text = T1, margin = 0)(T1)
-```
-
-
-Product * Recall
-
-```{r, echo=FALSE}
-
-# Product * Recall
-T2 <- margin.table(prompted_recall_table, c(1,3)) 
-T2
-P2 <- summary(T2)
-P2
-print(c("P = ", format(P2$p.value, scientific=FALSE)))
-
-BF2 <- contingencyTableBF(T2, sampleType = "indepMulti", fixedMargin = "rows")
-BF2
-print(c("BF10:", format(exp(BF2@bayesFactor$bf), scientific=FALSE)))
-
-# Prepare the chart
-model_pois <- glm(Freq ~ Product + Recall, family = poisson, data = T2)
-mosaic(model_pois, ~ Product + Recall, residuals_type="rstandard", labeling=labeling_values())
-# Show the data
-ftable(T2)
-summary(model_pois)
-
-```
-
-
-Endorsement * Recall
-
-```{r, echo=FALSE}
-# Endorsement * Recall
-T3 <- margin.table(prompted_recall_table, c(2,3)) 
-T3
-P3<- summary(T3)
-P3
-print(c("P = ", format(P3$p.value, scientific=FALSE)))
-
-BF3 <- contingencyTableBF(T3, sampleType = "indepMulti", fixedMargin = "rows")
-BF3
-print(c("BF10:", format(exp(BF3@bayesFactor$bf), scientific=FALSE)))
-
-# Prepare the chart
-model_pois <- glm(Freq ~ Endorsement + Recall, family = poisson, data = T3)
-mosaic(model_pois, ~ Endorsement + Recall, residuals_type="rstandard", labeling=labeling_values())
-# Show the data
-ftable(data_subset)
-summary(model_pois)
-```
 
 # The Log Linear Analysis
 
-## Model of Joint indepdendence : allows an association between Endrosement and Product but assumes Recall is indepdenent of both of these and their combinations
-
 ```{r}
-# Model of Joint independence : allows an association between A and B, but specifies that C is independent of both of these and their combinations
-model_joint_indep <- loglm(formula = ~ Endorsement * Product + Recall, data=prompted_recall_table)
-plot(model_joint_indep, panel = mosaic, type = "observed", residuals_type = "pearson", gp = shading_hcl, gp_args = list(), pop=FALSE, shade=TRUE, legend=TRUE)
+
+# Table for prompted Recall
+prompted_recall_table <- xtabs(~ Product + Endorsement + Recall, data=prompted_recall)
+
+# Saturated model
+saturated <- loglm(~ Endorsement * Product * Recall, data=prompted_recall_table)
+summary(saturated)
+# Three way interaction
+threeway <- loglm(~ Endorsement + Product + Recall + Endorsement:Product + Endorsement:Recall + Product:Recall, data=prompted_recall_table)
+summary(threeway)
+# Compare the models
+anova(saturated, threeway)
+
+# Lets plot it
+mosaic(prompted_recall_table, shade=TRUE, main = "Participant's recall of product adverts", pop=FALSE, legend=FALSE)
 labeling_cells(text = prompted_recall_table, margin = 0)(prompted_recall_table)
-summary(model_joint_indep)
 
 ```
-
-## Saturated model : This generates a model based on the data
-
-```{r}
-model_log_sat <- loglm(~ Endorsement * Product * Recall, data=prompted_recall_table)
-plot(model_log_sat)
-summary(model_log_sat)
-```
-
-## Without the 4/3 way interaction, this model takes away the combined interaction
-
-```{r}
-model_log_reduced <- loglm(~ Endorsement * Product * Recall - Endorsement:Product:Recall, data=prompted_recall_table)
-plot(model_log_reduced)
-model_log_reduced
-```
-
-## How different are the models?
-
-```{r}
-
-anova(model_log_sat, model_log_reduced, test = "Chisq")
-
-```
-
-## Removing the Endorsement interactions : This shows where product is having the biggest impact
-
-```{r}
-model_log_product <- loglm(~ Endorsement * Product * Recall - Endorsement:Product:Recall - Endorsement:Recall - Product:Endorsement, data=prompted_recall_table)
-plot(model_log_product)
-```
-
-## Removing the Product interactions : This shows where endorsement is having the biggest impact
-
-```{r}
-model_log_product <- loglm(~ Endorsement * Product * Recall - Endorsement:Product:Recall - Product:Recall, data=prompted_recall_table)
-plot(model_log_product)
-```
-
-
-Playing around with glm()
-
-```{r}
-# Full Interaction - Poisson version, Freq indicates a count
-model_pois <- glm(Freq ~ Product * Endorsement + Recall, family = poisson, data = prompted_recall_table)
-mosaic(model_pois, ~ Product * Endorsement + Recall, residuals_type="rstandard", labeling=labeling_values())
-summary(model_pois)
-
-# Full Interaction, testing binomial version
-model_binom <- glm(Recall ~ Product * Endorsement, family = binomial("logit"), data = prompted_recall)
-mosaic(model_binom, ~ Product * Endorsement + Recall, residuals_type="rstandard", labeling=labeling_values())
-summary(model_binom)
-
-
-```
-
-
 

@@ -14,7 +14,7 @@ names(eye_data) <- eye_header[1,]
 # Free Recall data needed to be manually coded and is saved in a seperate spreadsheet
 free_recall <- read.csv("free_recall.csv", stringsAsFactors=FALSE)
 free_recall[is.na(free_recall)] <- 0
-  
+
 
 library("dplyr")
 data <- bind_rows(data, eye_data)
@@ -48,7 +48,6 @@ free_true <- free_recall$count!=99
 
 
 # Code some the relevant totals
-
 
 
 

@@ -2,7 +2,7 @@
 title: "Free Recall"
 author: "Barry Sheppard"
 date: "02 July 2016"
-output: pdf_document
+output: html_document
 ---
 
 ## Free Recall Results
@@ -26,42 +26,62 @@ prompted_recall <- rename(f_recall, c("recall"="Recall", "product"="Product", "e
 prompted_recall_table <- xtabs(~Product + Endorsement + Recall, data=prompted_recall)
 ```
 
-## 2x2 Breakdowns - Products
-Starting with the hypotheses for Product
+## Analysis
+
+### Responses
 
 ```{r, echo=FALSE}
+# count the total responses per person (only valid responses)
+print(c("Mean of responses", round(mean(free_recall[free_true,]$responses), 2)))
+print(c("Standard deviation of responses", round(sd(free_recall[free_true,]$responses),2)))
 
+# Count of correct data
+print(c("Mean of correct responses", round(mean(free_recall[free_true,]$count),2)))
+print(c("Standard deviation of correct responses", round(sd(free_recall[free_true,]$count),2)))
+```
+
+## 2x2 Breakdowns - Products
+
+### Product: Healthy vs Unhealthy
+
+```{r, echo=FALSE, error=FALSE}
 # Subset the data to remove NonFood so we can compare Unhealthy and Healthy 
 data_subset <- subset(prompted_recall, Product!="NonFood")
 # Refactor Product to remove the unused factor
 data_subset$Product <- factor(data_subset$Product)
+# Prepare the data
+prompted_recall_table_1 <- xtabs(~ Product + Recall, data_subset)
 # Show the data
 ftable(data_subset)
-# Prepare the data
-prompted_recall_table_1 <- xtabs(~Product + Recall, data_subset)
-# Prepare the chart
-mosaic(prompted_recall_table_1, shade=TRUE, legend=TRUE, pop=FALSE)
-labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
+
 # Summarise the results
 P1 <- summary(prompted_recall_table_1)
 P1
 print(c("P = ", format(P1$p.value, scientific=FALSE)))
-# Bayes Factors
+
+# Bayes Factors - indepMultinomial, generalised form
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
 print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
+
+# This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
+model_joint_indep <- loglm(formula = ~ Product + Recall, data=prompted_recall_table_1)
+plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
+labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
+```
+
+### Product: Nonfood vs Unhealthy
+
+```{r, echo=FALSE}
 
 # Subset the data to remove NonFood so we can compare Unhealthy and Nonfood
 data_subset <- subset(prompted_recall, Product!="Healthy")
 # Refactor Product to remove the unused factor
 data_subset$Product <- factor(data_subset$Product)
-# Show the data
-ftable(data_subset)
 # Prepare the data
 prompted_recall_table_1 <- xtabs(~Product + Recall, data_subset)
-# Prepare the chart
-mosaic(prompted_recall_table_1, shade=TRUE, legend=TRUE, pop=FALSE)
-labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
+# Show the data
+ftable(data_subset)
 # Summarise results 
 P1 <- summary(prompted_recall_table_1)
 P1
@@ -70,18 +90,23 @@ print(c("P = ", format(P1$p.value, scientific=FALSE)))
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
 print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
+# This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
+model_joint_indep <- loglm(formula = ~ Product + Recall, data=prompted_recall_table_1)
+plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
+labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
+```
 
+### Product: Healthy vs Nonfood
+
+```{r, echo=FALSE}
 # Subset the data to remove NonFood so we can compare Healthy and Nonfood
 data_subset <- subset(prompted_recall, Product!="Unhealthy")
 # Refactor Product to remove the unused factor
 data_subset$Product <- factor(data_subset$Product)
-# Show the data
-ftable(data_subset)
 # Prepare the data
 prompted_recall_table_1 <- xtabs(~Product + Recall, data_subset)
-# Prepare the chart
-mosaic(prompted_recall_table_1, shade=TRUE, legend=TRUE, pop=FALSE)
-labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
+# Show the data
+ftable(data_subset)
 # Summarise results 
 P1 <- summary(prompted_recall_table_1)
 P1
@@ -90,12 +115,16 @@ print(c("P = ", format(P1$p.value, scientific=FALSE)))
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
 print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
-
+# This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
+model_joint_indep <- loglm(formula = ~ Product + Recall, data=prompted_recall_table_1)
+plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
+labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
 ```
 
 
 ## 2x2 Breakdowns - Endorsement
-Starting with the hypotheses for endorsement
+
+### Endorsement: Peer vs Celebrity
 
 ```{r, echo=FALSE}
 # Subset the data to remove Sponsored so we can compare Peer and Celebrity 
@@ -106,9 +135,6 @@ data_subset$Endorsement <- factor(data_subset$Endorsement)
 prompted_recall_table_1 <- xtabs(~Endorsement + Recall, data_subset)
 # Show the data
 ftable(data_subset)
-# Prepare the chart
-mosaic(prompted_recall_table_1, shade=TRUE, legend=TRUE, pop=FALSE)
-labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
 # Summarise results 
 P1 <- summary(prompted_recall_table_1)
 P1
@@ -117,7 +143,15 @@ print(c("P = ", format(P1$p.value, scientific=FALSE)))
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
 print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
+# This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
+model_joint_indep <- loglm(formula = ~ Endorsement + Recall, data=prompted_recall_table_1)
+plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
+labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
+```
 
+### Endorsement: Peer vs Sponsored
+
+```{r, echo=FALSE}
 
 # Subset the data to remove Celebrity so we can compare Peer and Sponsored 
 data_subset <- subset(prompted_recall, Endorsement!="Celebrity")
@@ -127,9 +161,6 @@ data_subset$Endorsement <- factor(data_subset$Endorsement)
 prompted_recall_table_1 <- xtabs(~Endorsement + Recall, data_subset)
 # Show the data
 ftable(data_subset)
-# Prepare the chart
-mosaic(prompted_recall_table_1, shade=TRUE, legend=TRUE, pop=FALSE)
-labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
 # Summarise results 
 P1 <- summary(prompted_recall_table_1)
 P1
@@ -138,8 +169,15 @@ print(c("P = ", format(P1$p.value, scientific=FALSE)))
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
 print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
+# This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
+model_joint_indep <- loglm(formula = ~ Endorsement + Recall, data=prompted_recall_table_1)
+plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
+labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
+```
 
+### Endorsement: Celebrity vs Sponsored
 
+```{r, echo=FALSE}
 
 # Subset the data to remove Peer so we can compare Celebrity and Sponsored
 data_subset <- subset(prompted_recall, Endorsement!="Peer")
@@ -149,9 +187,6 @@ data_subset$Endorsement <- factor(data_subset$Endorsement)
 prompted_recall_table_1 <- xtabs(~Endorsement + Recall, data_subset)
 # Show the data
 ftable(data_subset)
-# Prepare the chart
-mosaic(prompted_recall_table_1, shade=TRUE, legend=TRUE, pop=FALSE)
-labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
 # Summarise results 
 P1 <- summary(prompted_recall_table_1)
 P1
@@ -160,7 +195,10 @@ print(c("P = ", format(P1$p.value, scientific=FALSE)))
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
 print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
-
+# This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
+model_joint_indep <- loglm(formula = ~ Endorsement + Recall, data=prompted_recall_table_1)
+plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
+labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
 ```
 
 
@@ -172,6 +210,10 @@ Full interaction of Product * endorsement * Recall
 
 # Table the prompted Recall table
 ftable(prompted_recall_table)
+table <- ftable(prompted_recall_table)
+print("Percentages")
+round(prop.table(table, 1),2)
+
 # Xtabs for the prompoted Recall
 P1 <- summary(prompted_recall_table)
 P1
@@ -181,9 +223,61 @@ BF1 <- contingencyTableBF(prompted_recall_table, sampleType = "indepMulti", fixe
 BF1
 print(c("BF10:", format(exp(BF1@bayesFactor$bf), scientific=FALSE)))
 
-mosaic(prompted_recall_table, shade=TRUE, legend=TRUE, pop=FALSE)
+```
+
+
+
+# The Log Linear Analysis
+
+## First a mutual indepedence model with a plot to visualise the data
+
+```{r}
+# Mutual Independence: A, B, and C are pairwise independent.
+model_mut_indep <- loglm(formula = ~ Endorsement + Product + Recall, data=prompted_recall_table)
+plot(model_mut_indep, panel = mosaic, type = "observed", residuals_type = "pearson", gp = shading_hcl, gp_args = list(), pop=FALSE, shade=TRUE, legend=TRUE)
+labeling_cells(text = prompted_recall_table, margin = 0)(prompted_recall_table)
+summary(model_mut_indep)
+```
+
+## Saturated model : This generates a model based on the data, so residuals are 0
+
+```{r}
+model_log_sat <- loglm(~ Endorsement * Product * Recall, data=prompted_recall_table)
+summary(model_log_sat)
+```
+
+## Without the 4/3 way interaction, this model takes away the combined interaction
+
+```{r}
+model_log_reduced <- loglm(~ Endorsement * Product * Recall - Endorsement:Product:Recall, data=prompted_recall_table)
+plot(model_log_reduced, panel = mosaic, type = "observed", residuals_type = "pearson", gp = shading_hcl, gp_args = list(), pop=FALSE, shade=TRUE, legend=TRUE)
+labeling_cells(text = prompted_recall_table, margin = 0)(prompted_recall_table)
+model_log_reduced
+```
+
+## Removing the Endorsement interactions : This shows where product is having the biggest impact
+
+```{r}
+model_log_product <- loglm(~ Endorsement * Product * Recall - Endorsement:Product:Recall - Endorsement:Recall - Product:Endorsement, data=prompted_recall_table)
+plot(model_log_product, panel = mosaic, type = "observed", residuals_type = "pearson", gp = shading_hcl, gp_args = list(), pop=FALSE, shade=TRUE, legend=TRUE)
+labeling_cells(text = prompted_recall_table, margin = 0)(prompted_recall_table)
+model_log_product
+```
+
+## Removing the Product interactions : This shows where endorsement is having the biggest impact
+
+```{r}
+model_log_endorse <- loglm(~ Endorsement * Product * Recall - Endorsement:Product:Recall - Product:Recall, data=prompted_recall_table)
+plot(model_log_endorse, panel = mosaic, type = "observed", residuals_type = "pearson", gp = shading_hcl, gp_args = list(), pop=FALSE, shade=TRUE, legend=TRUE)
 labeling_cells(text = prompted_recall_table, margin = 0)(prompted_recall_table)
 ```
+
+## How different are the models?
+
+```{r}
+anova(model_log_sat, model_log_reduced, model_mut_indep, model_log_product, model_log_endorse, test = "Chisq")
+```
+
 
 Endorsement * Product
 This should appear as a symmetrical 3 x 3 square as there are an equal number of all combinations
@@ -213,7 +307,8 @@ BF2 <- contingencyTableBF(T2, sampleType = "indepMulti", fixedMargin = "rows")
 BF2
 print(c("BF10:", format(exp(BF2@bayesFactor$bf), scientific=FALSE)))
 
-mosaic(T2, shade=TRUE, legend=TRUE, pop=FALSE)
+model <- loglm(formula = ~ Product + Recall, data=T2)
+plot(model, panel = mosaic, type = "observed", pop=FALSE, shade=TRUE, legend=TRUE)
 labeling_cells(text = T2, margin = 0)(T2)
 
 ```
@@ -233,25 +328,8 @@ BF3 <- contingencyTableBF(T3, sampleType = "indepMulti", fixedMargin = "rows")
 BF3
 print(c("BF10:", format(exp(BF3@bayesFactor$bf), scientific=FALSE)))
 
-mosaic(T3, shade=TRUE, legend=TRUE, pop=FALSE)
+model <- loglm(formula = ~ Endorsement + Recall, data=T3)
+plot(model, panel = mosaic, type = "observed", pop=FALSE, shade=TRUE, legend=TRUE)
 labeling_cells(text = T3, margin = 0)(T3)
-```
-
-# The Log Linear Analysis
-
-```{r}
-summary(loglm(~ Endorsement + Product + Recall, data=prompted_recall_table))
-```
-
-Saturated model
-
-```{r}
-summary(loglm(~ Endorsement * Product * Recall, data=prompted_recall_table))
-```
-
-Without the 4/3 way interaction
-
-```{r}
-summary(loglm(~ Endorsement * Product * Recall - Endorsement:Product:Recall, data=prompted_recall_table))
 ```
 

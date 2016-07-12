@@ -2,15 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
-
-Facebook.csv
-
 *.csv
-
 *.zip
-
 *.html
-
 *.pdf
-
 *.jpeg
+*.txt

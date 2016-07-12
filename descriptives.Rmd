@@ -2,7 +2,7 @@
 title: "Adolescents, Facebook, and Food"
 author: "Barry Sheppard"
 date: "18 June 2016"
-output: pdf_document
+output: html_document
 ---
 
 
@@ -50,13 +50,11 @@ ggplot(data=data, aes(x=gender, fill=gender)) +
                       breaks=c("Male", "Female"), 
                       values=c("#3b5998", "#FF6E8C")) +
   guides(fill=FALSE)
-
 ```
 
 
 ```{r, echo=FALSE}
 # Please tell me how often you go online or use the internet, from a computer, a mobile phone, a smartphone, or any other device you may use to go online (please tick one):
-
 ggplot(data=data, aes(x=how.often, fill=how.often)) +
   geom_bar(colour = "black", stat="count") +
   theme_economist() + 
@@ -69,7 +67,6 @@ ggplot(data=data, aes(x=how.often, fill=how.often)) +
 
 ```{r, echo=FALSE, warning=FALSE}
 # How many hours of television do you watch every day?
-
 ggplot(data, aes(x=tv.use)) +
   geom_histogram(binwidth=.5, fill="#c0392b", alpha=0.75) +
   theme_economist() + 
@@ -83,7 +80,6 @@ describe(data$tv.use)
 
 ```{r, echo=FALSE}
 # Roughly how many people are you in contact with on social media (Please tick one):
-
 ggplot(data=data, aes(x=contacts, fill=contacts)) +
   geom_bar(colour = "black", stat="count") +
   theme_economist() + 
@@ -96,7 +92,6 @@ ggplot(data=data, aes(x=contacts, fill=contacts)) +
 
 ```{r, echo=FALSE}
 # is your profile set to (Please tick one):
-
 ggplot(data=data, aes(x=profile.privacy, fill=profile.privacy)) +
   geom_bar(colour = "black", stat="count") +
   guides(fill=FALSE) +
@@ -111,7 +106,6 @@ ggplot(data=data, aes(x=profile.privacy, fill=profile.privacy)) +
 
 ```{r, echo=FALSE}
 # There are lots of things on the internet that are good for children of my age (Please tick one):
-
 ggplot(data=data, aes(x=good.things, fill=good.things)) +
   geom_bar(colour = "black", stat="count") +
   theme_economist() + 
@@ -159,7 +153,6 @@ ggplot(data=data, aes(x=how.adverts.appear, fill=how.adverts.appear)) +
   geom_text(stat='count', aes(label=..count..), vjust=2, colour = "white") +
   ggtitle("Do you know how Facebook, Instagram or Youtube decide\n which adverts appear?") +
   guides(fill=FALSE)
-
 ```
 
 # Which internet platforms do you use the most? 
@@ -169,9 +162,7 @@ You can leave ones you don't use as 0
 
 ```{r, echo=FALSE}
 # Combined platforms
-
 preference <- c(1:6)
-
 facebook <- as.data.frame(cumsum(table(data$platforms_1, exclude = 0)))
 facebook <- facebook[,1]/nrow(data)
 snapchat <- as.data.frame(cumsum(table(data$platforms_2, exclude = 0)))
@@ -186,8 +177,6 @@ whatsapp <- as.data.frame(cumsum(table(data$platforms_4, exclude = 0)))
 whatsapp <- whatsapp[,1]/nrow(data)
 instagram <- as.data.frame(cumsum(table(data$platforms_5, exclude = 0)))
 instagram <- instagram[,1]/nrow(data)
-
-
 
 apps <- data.frame(preference, facebook, snapchat, youtube, whatsapp, instagram)
 
