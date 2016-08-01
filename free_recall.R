@@ -12,29 +12,26 @@ library(gmodels)
 
 source("load.R", print.eval=TRUE)
 
-# Rename for the graph
-prompted_recall <- plyr::rename(prompted_recall, c("recall"="Recall", "product"="Product", "endorse"="Endorsement"))
-
+# I'm being lazy and reusing the prompted_recall code as is
+prompted_recall <- plyr::rename(f_recall, c("recall"="Recall", "product"="Product", "endorse"="Endorsement"))
 # Table for prompted Recall
 prompted_recall_table <- xtabs(~Product + Endorsement + Recall, data=prompted_recall)
 
-
-# Mosaic plot the overall
-model_joint_indep <- loglm(formula = ~ Product + Recall, data=prompted_recall_table)
-plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
-labeling_cells(text = prompted_recall_table, margin = 0)(prompted_recall_table)
 
 ## Analysis
 
 ### Responses
 
+# Total responses
+table(free_true)
+
 # count the total responses per person (only valid responses)
-print(c("Mean of responses", round(mean(data$total_fam[fam_true]), 2)))
-print(c("Standard deviation of responses", round(sd(data$total_fam[fam_true]),2)))
+print(c("Mean of responses", round(mean(free_recall[free_true,]$responses), 2)))
+print(c("Standard deviation of responses", round(sd(free_recall[free_true,]$responses),2)))
 
 # Count of correct data
-print(c("Mean of correct responses", round(mean(rating$count),2)))
-print(c("Standard deviation of correct responses", round(sd(rating$count),2)))
+print(c("Mean of correct responses", round(mean(free_recall[free_true,]$count),2)))
+print(c("Standard deviation of correct responses", round(sd(free_recall[free_true,]$count),2)))
 
 ## 2x2 Breakdowns - Products
 
@@ -49,6 +46,11 @@ prompted_recall_table_1 <- xtabs(~ Product + Recall, data_subset)
 # Show the data + results
 CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
 
+# Bayes Factors - indepMultinomial, generalised form
+BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
+BF
+print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
+
 # This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
 model_joint_indep <- loglm(formula = ~ Product + Recall, data=prompted_recall_table_1)
 plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
@@ -56,6 +58,7 @@ labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table
 
 
 ### Product: Nonfood vs Unhealthy
+
 
 # Subset the data to remove NonFood so we can compare Unhealthy and Nonfood
 data_subset <- subset(prompted_recall, Product!="Healthy")
@@ -65,12 +68,14 @@ data_subset$Product <- factor(data_subset$Product)
 prompted_recall_table_1 <- xtabs(~Product + Recall, data_subset)
 # Show the data + results
 CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
-
+# Bayes Factors
+BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
+BF
+print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
 # This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
 model_joint_indep <- loglm(formula = ~ Product + Recall, data=prompted_recall_table_1)
 plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
 labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
-
 
 
 ### Product: Healthy vs Nonfood
@@ -83,7 +88,10 @@ data_subset$Product <- factor(data_subset$Product)
 prompted_recall_table_1 <- xtabs(~Product + Recall, data_subset)
 # Show the data + Results
 CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
-
+# Bayes Factors
+BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
+BF
+print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
 # This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
 model_joint_indep <- loglm(formula = ~ Product + Recall, data=prompted_recall_table_1)
 plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
@@ -102,14 +110,18 @@ data_subset$Endorsement <- factor(data_subset$Endorsement)
 prompted_recall_table_1 <- xtabs(~Endorsement + Recall, data_subset)
 # Show the data + results
 CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
-
+# Bayes Factors
+BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
+BF
+print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
 # This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
 model_joint_indep <- loglm(formula = ~ Endorsement + Recall, data=prompted_recall_table_1)
 plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
 labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
 
-
 ### Endorsement: Peer vs Sponsored
+
+
 # Subset the data to remove Celebrity so we can compare Peer and Sponsored 
 data_subset <- subset(prompted_recall, Endorsement!="Celebrity")
 # Refactor Endorsement to remove the unused factor
@@ -118,7 +130,10 @@ data_subset$Endorsement <- factor(data_subset$Endorsement)
 prompted_recall_table_1 <- xtabs(~Endorsement + Recall, data_subset)
 # Show the data + results
 CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
-
+# Bayes Factors
+BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
+BF
+print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
 # This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
 model_joint_indep <- loglm(formula = ~ Endorsement + Recall, data=prompted_recall_table_1)
 plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
@@ -126,6 +141,7 @@ labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table
 
 
 ### Endorsement: Celebrity vs Sponsored
+
 
 # Subset the data to remove Peer so we can compare Celebrity and Sponsored
 data_subset <- subset(prompted_recall, Endorsement!="Peer")
@@ -170,6 +186,7 @@ print(c("BF10:", format(exp(BF1@bayesFactor$bf), scientific=FALSE)))
 
 # The Log Linear Analysis
 
+
 # Table for prompted Recall
 prompted_recall_table <- xtabs(~ Product + Endorsement + Recall, data=prompted_recall)
 
@@ -207,9 +224,9 @@ plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALS
 labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
 
 
-# Subset the data to compare Celebrity and Sponsored context in the Unhealthy product type
+# Subset the data to compare Sponsored and Peer context in the Unhealthy product type
 data_subset <- subset(prompted_recall, Product =="Unhealthy")
-data_subset <- subset(data_subset, Endorsement!="Peer")
+data_subset <- subset(data_subset, Endorsement!="Celebrity")
 # Refactor Product to remove the unused factor
 data_subset$Product <- factor(data_subset$Product)
 data_subset$Endorsement <- factor(data_subset$Endorsement)
@@ -270,10 +287,9 @@ labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table
 
 
 
-
-# Subset the data to compare Peer and Celebrity context in the Non-Food product type
+# Subset the data to compare Peer and Sponsored context in the NonFood product type
 data_subset <- subset(prompted_recall, Product =="NonFood")
-data_subset <- subset(data_subset, Endorsement!="Sponsored")
+data_subset <- subset(data_subset, Endorsement!="Celebrity")
 # Refactor Product to remove the unused factor
 data_subset$Product <- factor(data_subset$Product)
 data_subset$Endorsement <- factor(data_subset$Endorsement)
@@ -289,6 +305,30 @@ print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
 model_joint_indep <- loglm(formula = ~ Endorsement + Recall, data=prompted_recall_table_1)
 plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
 labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
+
+
+
+
+# Subset the data to compare Peer and Celebrity context in the Healthy product type
+data_subset <- subset(prompted_recall, Product =="NonFood")
+data_subset <- subset(data_subset, Endorsement!="Peer")
+# Refactor Product to remove the unused factor
+data_subset$Product <- factor(data_subset$Product)
+data_subset$Endorsement <- factor(data_subset$Endorsement)
+# Prepare the data
+prompted_recall_table_1 <- xtabs(~Endorsement + Recall, data_subset)
+# Show the data + Results
+CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
+# Bayes Factors
+BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
+BF
+print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
+# This is a Log Linear model and displayed as a mosaic, a little excessive as we're only displaying the table
+model_joint_indep <- loglm(formula = ~ Endorsement + Recall, data=prompted_recall_table_1)
+plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
+labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
+
+
 
 # Subset the data to compare Healthy and Unhealthy product types in the Peer context
 data_subset <- subset(prompted_recall, Endorsement =="Peer")
@@ -315,10 +355,10 @@ CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRU
 
 
 
-# Subset the data to compare the Celebrity verus the non-Celebrity context in the Unhealthy type
+# Subset the data to compare the Peer verus the non-Peer context in the Unhealthy type
 data_subset <- subset(prompted_recall, Product =="Unhealthy")
-data_subset$Endorsement <- factor(data_subset$Endorsement, levels=c(levels(data_subset$Endorsement), "Non-Celebrity"))
-data_subset$Endorsement[data_subset$Endorsement!="Celebrity"] <- "Non-Celebrity"
+data_subset$Endorsement <- factor(data_subset$Endorsement, levels=c(levels(data_subset$Endorsement), "Non-Peer"))
+data_subset$Endorsement[data_subset$Endorsement!="Peer"] <- "Non-Peer"
 # Refactor Product to remove the unused factor
 data_subset$Product <- factor(data_subset$Product)
 data_subset$Endorsement <- factor(data_subset$Endorsement)
@@ -327,12 +367,10 @@ prompted_recall_table_1 <- xtabs(~Endorsement + Recall, data_subset)
 # Show the data + Results
 CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
 
-
-
-# Subset the data to compare the Peer verus the non-Peer context in the Healthy type
-data_subset <- subset(prompted_recall, Product =="Healthy")
-data_subset$Endorsement <- factor(data_subset$Endorsement, levels=c(levels(data_subset$Endorsement), "Non-Peer"))
-data_subset$Endorsement[data_subset$Endorsement!="Peer"] <- "Non-Peer"
+# Subset the data to compare the Sponsored verus the non-Sponsored context in the Non-food type
+data_subset <- subset(prompted_recall, Product =="NonFood")
+data_subset$Endorsement <- factor(data_subset$Endorsement, levels=c(levels(data_subset$Endorsement), "Non-Sponsored"))
+data_subset$Endorsement[data_subset$Endorsement!="Sponsored"] <- "Non-Sponsored"
 # Refactor Product to remove the unused factor
 data_subset$Product <- factor(data_subset$Product)
 data_subset$Endorsement <- factor(data_subset$Endorsement)
@@ -351,29 +389,3 @@ data_subset$Endorsement <- factor(data_subset$Endorsement)
 prompted_recall_table_1 <- xtabs(~Product + Recall, data_subset)
 # Show the data + Results
 CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
-
-# Subset the data to compare the Healthy verus the Unhealthy context in the Peer type
-data_subset <- subset(prompted_recall, Endorsement =="Peer")
-data_subset <- subset(data_subset, Product!="NonFood")
-# Refactor Product to remove the unused factor
-data_subset$Product <- factor(data_subset$Product)
-data_subset$Endorsement <- factor(data_subset$Endorsement)
-# Prepare the data
-prompted_recall_table_1 <- xtabs(~Product + Recall, data_subset)
-# Show the data + Results
-CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
-
-
-
-# Subset the data to compare the Sponsored verus the non-Sponsored context in the Non-food type
-data_subset <- subset(prompted_recall, Product =="Sponsored")
-data_subset$Endorsement <- factor(data_subset$Endorsement, levels=c(levels(data_subset$Endorsement), "Non-Sponsored"))
-data_subset$Endorsement[data_subset$Endorsement!="Sponsored"] <- "Non-Sponsored"
-# Refactor Product to remove the unused factor
-data_subset$Product <- factor(data_subset$Product)
-data_subset$Endorsement <- factor(data_subset$Endorsement)
-# Prepare the data
-prompted_recall_table_1 <- xtabs(~Endorsement + Recall, data_subset)
-# Show the data + Results
-CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
-

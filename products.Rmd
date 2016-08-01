@@ -2,7 +2,7 @@
 title: "Product Analysis"
 author: "Barry Sheppard"
 date: "21 June 2016"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -229,6 +229,11 @@ familiarity.dataframe <- data.frame(brands, brand.type, brand.endorsement, famil
 
 # Remove the brands that were not included in the profiles
 familiarity.dataframe<-familiarity.dataframe[!(familiarity.dataframe$brand.endorsement=="Not Present"),]
+
+familiarity.dataframe
+
+temp <- familiarity.dataframe[familiarity.dataframe$brand.type=="Non-Food",]
+temp[temp$brand.endorsement=="Celebrity",]
 
 ```
 

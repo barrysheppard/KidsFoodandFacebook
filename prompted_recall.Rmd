@@ -54,13 +54,8 @@ data_subset <- subset(prompted_recall, Product!="NonFood")
 data_subset$Product <- factor(data_subset$Product)
 # Prepare the data
 prompted_recall_table_1 <- xtabs(~ Product + Recall, data_subset)
-# Show the data
-ftable(data_subset)
-
-# Summarise the results
-P1 <- summary(prompted_recall_table_1)
-P1
-print(c("P = ", format(P1$p.value, scientific=FALSE)))
+# Show the data + results
+CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
 
 # Bayes Factors - indepMultinomial, generalised form
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
@@ -71,13 +66,6 @@ print(c("BF10:", format(exp(BF@bayesFactor$bf), scientific=FALSE)))
 model_joint_indep <- loglm(formula = ~ Product + Recall, data=prompted_recall_table_1)
 plot(model_joint_indep, panel = mosaic, type = "observed", pop=FALSE, shade=FALSE, legend=FALSE)
 labeling_cells(text = prompted_recall_table_1, margin = 0)(prompted_recall_table_1)
-
-# To start over with Andy Fields version
-
-# Product 
-Product <- prompted_recall$Product[prompted_recall$Product!="NonFood"]
-Recall <- prompted_recall$Recall[prompted_recall$Product!="NonFood"]
-CrossTable(Product, Recall, fisher = TRUE, chisq = TRUE, expected = TRUE, sresid = TRUE, format = "SPSS", digits = 2)
 
 ```
 
@@ -91,12 +79,8 @@ data_subset <- subset(prompted_recall, Product!="Healthy")
 data_subset$Product <- factor(data_subset$Product)
 # Prepare the data
 prompted_recall_table_1 <- xtabs(~Product + Recall, data_subset)
-# Show the data
-ftable(data_subset)
-# Summarise results 
-P1 <- summary(prompted_recall_table_1)
-P1
-print(c("P = ", format(P1$p.value, scientific=FALSE)))
+# Show the data + results
+CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
 # Bayes Factors
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
@@ -116,12 +100,8 @@ data_subset <- subset(prompted_recall, Product!="Unhealthy")
 data_subset$Product <- factor(data_subset$Product)
 # Prepare the data
 prompted_recall_table_1 <- xtabs(~Product + Recall, data_subset)
-# Show the data
-ftable(data_subset)
-# Summarise results 
-P1 <- summary(prompted_recall_table_1)
-P1
-print(c("P = ", format(P1$p.value, scientific=FALSE)))
+# Show the data + Results
+CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
 # Bayes Factors
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
@@ -144,12 +124,8 @@ data_subset <- subset(prompted_recall, Endorsement!="Sponsored")
 data_subset$Endorsement <- factor(data_subset$Endorsement)
 # Prepare the data
 prompted_recall_table_1 <- xtabs(~Endorsement + Recall, data_subset)
-# Show the data
-ftable(data_subset)
-# Summarise results 
-P1 <- summary(prompted_recall_table_1)
-P1
-print(c("P = ", format(P1$p.value, scientific=FALSE)))
+# Show the data + results
+CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
 # Bayes Factors
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
@@ -170,12 +146,8 @@ data_subset <- subset(prompted_recall, Endorsement!="Celebrity")
 data_subset$Endorsement <- factor(data_subset$Endorsement)
 # Prepare the data
 prompted_recall_table_1 <- xtabs(~Endorsement + Recall, data_subset)
-# Show the data
-ftable(data_subset)
-# Summarise results 
-P1 <- summary(prompted_recall_table_1)
-P1
-print(c("P = ", format(P1$p.value, scientific=FALSE)))
+# Show the data + results
+CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
 # Bayes Factors
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
@@ -196,12 +168,8 @@ data_subset <- subset(prompted_recall, Endorsement!="Peer")
 data_subset$Endorsement <- factor(data_subset$Endorsement)
 # Prepare the data
 prompted_recall_table_1 <- xtabs(~Endorsement + Recall, data_subset)
-# Show the data
-ftable(data_subset)
-# Summarise results 
-P1 <- summary(prompted_recall_table_1)
-P1
-print(c("P = ", format(P1$p.value, scientific=FALSE)))
+# Show the data + results
+CrossTable(prompted_recall_table_1, chisq = TRUE, expected = TRUE, asresid = TRUE, format = "SPSS", digits = 2)
 # Bayes Factors
 BF <- contingencyTableBF(prompted_recall_table_1, sampleType = "indepMulti", fixedMargin = "rows")
 BF
@@ -252,11 +220,22 @@ summary(saturated)
 threeway <- loglm(~ Endorsement + Product + Recall + Endorsement:Product + Endorsement:Recall + Product:Recall, data=prompted_recall_table)
 summary(threeway)
 # Compare the models
-anova(saturated, threeway)
+anova(threeway, saturated)
 
-# Lets plot it
-mosaic(prompted_recall_table, shade=TRUE, main = "Participant's recall of product adverts", pop=FALSE, legend=FALSE)
-labeling_cells(text = prompted_recall_table, margin = 0)(prompted_recall_table)
 
 ```
+
+
+To determine which areas to focus on for the difference we need to look at the residuals
+
+
+
+
+
+```{r}
+
+
+
+```
+
 

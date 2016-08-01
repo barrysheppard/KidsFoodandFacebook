@@ -1,3 +1,20 @@
+---
+title: "Attention"
+author: "Barry Sheppard"
+date: "12 July 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Attention
+
+
+
+```{r echo=FALSE, error=FALSE}
+
 
 # Set working director
 setwd("~/GitHub/KidsFoodandFacebook")
@@ -92,6 +109,11 @@ attention_long$endorse <- factor(attention_long$endorse)
 attention_long$time <- as.numeric(attention_long$time)
 attention_long$time[is.na(attention_long$time)] <- 0
 
+```
+
+
+```{r}
+
 # Showing the average time spent viewing
 by(attention_long$time, attention_long$id, mean)
 
@@ -108,6 +130,9 @@ by(attention_long$time, attention_long$id, mean)
 #
 model <- aov(time ~ product + endorse + product:endorse, data = attention_long)
 anova(model)
+```
+
+```{r echo=FALSE, error=FALSE}
 
 # Calculating Effect size as per Andy Fields Discovering Statistics Using R output 12.4
 
@@ -181,8 +206,10 @@ attention_chart_data_endorse <- summarySE(attention_long, measurevar="time", gro
 
 attention_chart_data_product
 attention_chart_data_endorse
+```
 
 
+```{r}
 # Lets plot this stuff
 library(ggplot2)
 library(ggthemes)
@@ -221,4 +248,8 @@ ggplot(attention_chart_data_endorse, aes(x=endorse, y=time, fill=endorse)) +
 
   
 attention_chart_data
+
+
+
+```
 

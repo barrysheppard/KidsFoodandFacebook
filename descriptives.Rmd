@@ -141,6 +141,12 @@ ggplot(chart_df, aes(x = task, y = percentage, fill = result)) +
   theme(legend.title = element_blank()) +
   ggtitle("Which of these things do you know how to do?") +
   theme(plot.title = element_text(hjust = 2)) 
+
+# We also want to get an average percentage of skills for each user.
+
+# First we need to add a total skills
+
+
 ```
 
 
